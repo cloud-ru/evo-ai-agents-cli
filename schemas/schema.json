@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JSON Schema for AI Agents YAML deployment configuration",
+  "description": "Deploy AI Agent Systems with yaml",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "includes": {
+      "description": "A list of files that will be merged in one file",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "agents": {
+      "description": "A list of files that will be merged in one file",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique name of agent in project",
+            "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
+          },
+          "description" : {
+            "type": "string",
+            "description": "Description for your agent"
+          },
+          "model": {
+            "type": "string",
+            "description": "Reference on model by name described in [models] section"
+          },
+          "prompt" : {
+            "type": "string",
+            "description": "Reference on prompt by name described in [prompts] section",
+            "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
+          },
+          "source": {
+            "type": "object",
+            "description": "",
+            "properties": {
+              "simple": {
+                "type": "object",
+                "maxProperties": 0
+              },
+              "artifact_registry": {
+                "type": "object",
+                "description": "",
+                "properties": {
+                  "image":{
+                    "type": "string",
+                    "description": "",
+                    "pattern": "(\\w+).cr.cloud.ru/.*"
+                  }
+                },
+                "required": ["image"],
+                "minProperties": 1,
+                "maxProperties": 1
+              },
+              "marketplace": {
+                "type": "object",
+                "description": "",
+                "properties": {
+                  "name" : {
+                    "type": "string",
+                    "description": "Reference on prompt by name described in [prompts] section",
+                    "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
+                  }
+                },
+                "required": ["name"],
+                "minProperties": 1,
+                "maxProperties": 1
+              }
+            },
+            "minProperties": 1,
+            "maxProperties": 1
+          }
+        },
+        "required": ["name", "source", "options", "llm"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "prompts": {
+      "description": "A list of files that will be merged in one file",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+
+        }
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "mcp-servers": {
+      "description": "A list of files that will be merged in one file",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+
+        }
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  }
+}

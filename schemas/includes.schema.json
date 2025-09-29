@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JSON Schema for AI Agents YAML deployment configuration",
+  "description": "Deploy AI Agent Systems with yaml",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+  }
+}
