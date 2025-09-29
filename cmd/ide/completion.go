@@ -1,4 +1,4 @@
-package cmd
+package ide
 
 import (
 	"github.com/cloudru/ai-agents-cli/localizations"

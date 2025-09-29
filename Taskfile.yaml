@@ -1,0 +1,35 @@
+version: '3'
+
+
+vars:
+  LINTER_VERSION: "2.1.6"
+  GOTESTSUM_VERSION: "1.11.0"
+  HADOLINT_VERSION: "v2.12.1-beta"
+  LOCAL_BIN: "{{.USER_WORKING_DIR}}/bin"
+  MOCKERY_VERSION: "v2.41.0"
+
+tasks:
+  default:
+    deps: [help]
+
+  build:
+    desc: Build app
+    cmds:
+      - go build -o bin/ai-agents-cli
+    sources:
+      - ./cmd/**/*.go
+      - ./internal/**/*.go
+      - ./pkg/**/*.go
+    generates:
+      - bin/ai-agents-cli
+
+  build:run:
+    desc: Runs builded app
+    cmds:
+      - ./bin/ai-agents-cli
+    deps: [build]
+
+  help:
+    desc: Show available tasks
+    cmds:
+      - task --list

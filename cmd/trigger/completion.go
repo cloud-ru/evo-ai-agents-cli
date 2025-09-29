@@ -1,4 +1,4 @@
-package triigers
+package trigger
 
 import (
 	"github.com/cloudru/ai-agents-cli/localizations"

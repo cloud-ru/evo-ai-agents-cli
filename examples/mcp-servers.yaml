@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=../schemas/schema.json
+
+mcp-servers:
+  - name: "my_simple_mcp"

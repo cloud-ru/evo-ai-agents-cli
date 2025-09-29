@@ -1,4 +1,4 @@
-package cmd
+package mcp_server
 
 import (
 	"fmt"

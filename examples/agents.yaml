@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../schemas/schema.json
+
+agents:
+  - name: "simple-agent" #uniq name
+    llm:
+      model: gpt
+    options:
+    prompt: github_todo_agent_prompt #prompt name from prompts.yaml
+    source:
+      simple: {}
+    description: "Базовый агент для управления задачами"
+    mcp-servers:
+      - name: "my_simple_mcp"
+
+  - name: "agent_from_docker_image" #uniq name
+    model: gpt
+    prompt: github_todo_agent_prompt #prompt name from prompts.yaml
+    source:
+      artifact_registry:
+        image: "your-registry.cr.cloud.ru/marketplace-agent:latest"
+      marketplace:
+        name: "github-todo-manager"
+    description: "Агент с кастомным образом"
+    mcp_servers:
+      - name: "my_simple_mcp"
+
+  - name: "agent_from_marketplace" #uniq name
+    model: gpt
+    prompt: github_todo_agent_prompt
+    source:
+      marketplace:
+        name: "github-todo-manager"
+    description: "Агент из Marketplace"

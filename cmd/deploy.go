@@ -1,11 +1,12 @@
-package trigger
+package cmd
 
 import (
 	"fmt"
-
+	"github.com/charmbracelet/log"
 	"github.com/cloudru/ai-agents-cli/localizations"
-
 	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
 )
 
 // deployCmd represents the deploy command
@@ -14,20 +15,19 @@ var deployCmd = &cobra.Command{
 	Short: localizations.Localization.Get("deploy_short"),
 	Long:  localizations.Localization.Get("deploy_long"),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("deploy called")
+		currentDir, err := filepath.Abs(".")
+		if err != nil {
+			log.Error("failed to determine current working directory", err)
+			os.Exit(1)
+		}
+		fmt.Println(currentDir)
 	},
 }
 
 func init() {
 	RootCMD.AddCommand(deployCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
 	deployCmd.PersistentFlags().String("foo", "", "A help for foo")
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	deployCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

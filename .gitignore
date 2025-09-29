@@ -130,3 +130,8 @@ go.work.sum
 bin/
 .task
 .vscode
+mods
+.envrc
+completions/
+manpages/
+dist/

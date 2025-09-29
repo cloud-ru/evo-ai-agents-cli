@@ -1,64 +1,8 @@
-include:
-  prompts.yaml
-  agents.yaml
-  mcp-servers.yaml
-  systems.yaml
+# yaml-language-server: $schema=../schemas/schema.json
 
-prompts:
-  github_todo_agent:
-    name: "GitHub Issue Manager"
-    description: "Агент для управления задачами через GitHub Issues"
-    content: |
-      Ты — агент для управления задачами, использующий репозиторий GitHub как список дел.
-
-      # Основные задачи
-      - Подключайся к репозиторию "todo" и получай открытые issues.
-      - Покажи задачи на текущий день.
-      - Давай краткие сводки: заголовок, номер, метки, приоритет.
-      - Помогай управлять задачами: комментировать, закрывать, создавать.
-
-      # Поведение
-      - Начинай с указания текущей даты.
-      - Выделяй срочные задачи (метки: urgent, high priority).
-      - Предлагай, с чего начать.
-      - Готов выполнять действия по запросу.
-
-      # Взаимодействие
-      При запросе списка:
-      1. Перечисли открытые задачи.
-      2. Выдели важные.
-      3. Предложи детали или помощь с управлением.
-
-mcp_servers:
-  - name: "my_simple_mcp"
-
-
-agents:
-  - name: "simple_agent"
-    model: gpt
-    prompt: github_todo_agent
-    agentOptions:
-      type: simple
-    description: "Базовый агент для управления задачами"
-    mcp_servers:
-      - name: "my_simple_mcp"
-
-  - name: "agent_from_docker_image"
-    model: gpt
-    prompt: github_todo_agent
-    agentOptions:
-      type: custom
-      parameters:
-        imageSource: ghcr.io/your-org/marketplace-agent:latest
-    description: "Агент с кастомным образом"
-    mcp_servers:
-      - name: "my_simple_mcp"
-
-  - name: "agent_from_marketplace"
-    model: gpt
-    prompt: github_todo_agent
-    agentOptions:
-      type: marketplace
-      parameters:
-        marketplaceName: "github-todo-manager"
-    description: "Агент из Marketplace"
+includes:
+  - prompts.yaml
+  - prompts.yaml
+  - aboba
+  - mcp-servers.yaml
+  - systems.yaml

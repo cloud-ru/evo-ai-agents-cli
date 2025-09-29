@@ -1,1 +1,1 @@
-package consts
+package i18n_labels

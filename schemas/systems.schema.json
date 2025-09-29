@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JSON Schema for AI Agents YAML deployment configuration",
+  "description": "Deploy AI Agent Systems with yaml",
+  "type": "array",
+  "additionalProperties": false,
+  "items": {
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Unique name of agent in project",
+        "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
+      },
+      "description" : {
+        "type": "string",
+        "description": "Description for your agent",
+        "maxLength": 255
+      },
+      "model": {
+        "type": "string",
+        "description": "Reference on model by name described in [models] section"
+      },
+      "agents" : {
+        "type": "array",
+        "description": "",
+        "items": {
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Unique name of agent in project",
+              "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
+            }
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "required": ["name", "model", "agents"]
+  }
+}

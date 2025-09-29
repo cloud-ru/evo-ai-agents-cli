@@ -1,4 +1,4 @@
-package consts
+package i18n_labels
 
 const (
 	CompletionCommandLabelName    = "completion"
