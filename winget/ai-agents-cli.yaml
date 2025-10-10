@@ -1,0 +1,48 @@
+PackageIdentifier: CloudRu.AIAgentsCLI
+PackageVersion: 1.0.0
+PackageLocale: en-US
+Publisher: Cloud.ru
+PublisherUrl: https://cloud.ru
+PublisherSupportUrl: https://cloud.ru/support
+PackageName: AI Agents CLI
+PackageUrl: https://github.com/cloudru/ai-agents-cli
+License: MIT
+LicenseUrl: https://github.com/cloudru/ai-agents-cli/blob/main/LICENSE
+Copyright: Copyright (c) 2025 Cloud.ru
+CopyrightUrl: https://cloud.ru
+ShortDescription: Command-line tool for managing AI agents and MCP servers
+Description: |
+  AI Agents CLI is a powerful command-line tool for managing AI agents, 
+  MCP servers, and agent systems in Cloud.ru platform.
+  
+  Features:
+  - Manage MCP servers (create, update, delete, deploy)
+  - Manage AI agents and agent systems
+  - CI/CD integration with validation and monitoring
+  - Beautiful colored interface with emojis
+  - Support for YAML and JSON configurations
+  - Multi-language support (Russian, English)
+  
+  Perfect for DevOps teams and developers working with AI agents.
+Tags:
+  - ai
+  - agents
+  - mcp
+  - cli
+  - devops
+  - cloud
+  - automation
+Moniker: ai-agents-cli
+Commands:
+  - ai-agents-cli
+InstallerType: zip
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/cloudru/ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-windows-amd64.zip
+    InstallerSha256: PLACEHOLDER_SHA256
+    InstallerType: zip
+    InstallerSwitches:
+      Silent: /S
+      SilentWithProgress: /S
+ManifestType: singleton
+ManifestVersion: 1.4.0
