@@ -1,5 +1,13 @@
-hello: hello
-how_are_you: How are you?
-whats_your_name: "What's your name?"
-hello_my_name_is: Hello my name is {{.name}}
-hello_firstname_lastname: Hello {{.firstname}} {{.lastname}}
+deploy_short: "Развертывание ресурсов из конфигурационного файла"
+deploy_long: |
+  Команда deploy позволяет развертывать ресурсы (MCP серверы, агенты, системы) 
+  из конфигурационного файла в формате YAML или JSON.
+  
+  Поддерживаемые форматы:
+  • YAML (.yaml, .yml)
+  • JSON (.json)
+  
+  Примеры использования:
+  • ai-agents-cli mcp-servers deploy                    # Использует mcp-servers.yaml
+  • ai-agents-cli mcp-servers deploy config.json        # Указанный файл
+  • ai-agents-cli mcp-servers deploy --dry-run          # Предварительный просмотр

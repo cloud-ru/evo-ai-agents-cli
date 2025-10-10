@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/cloudru/ai-agents-cli/cmd/agent"
+	"github.com/cloudru/ai-agents-cli/cmd/ci"
 	"github.com/cloudru/ai-agents-cli/cmd/common"
 	"github.com/cloudru/ai-agents-cli/cmd/mcp_server"
 	"github.com/cloudru/ai-agents-cli/cmd/prompt"
@@ -12,6 +13,7 @@ import (
 func init() {
 	RootCMD.AddCommand(
 		agent.RootCMD,
+		ci.RootCMD,
 		common.RootCMD,
 		mcp_server.RootCMD,
 		prompt.RootCMD,

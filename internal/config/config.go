@@ -23,6 +23,8 @@ type Config struct {
 	BulkOperationsConcurrencyFactor int           `env:"BULK_OPERATIONS_CONCURRENCY" envDefault:"20"`
 
 	IntegrationApiGrpcAddr string `env:"PUBLIC_API_ENDPOINT"          envDefault:"ai-agents.api.cloud.ru"`
+	APIKey                 string `env:"API_KEY"                      envDefault:""`
+	ProjectID              string `env:"PROJECT_ID"                   envDefault:""`
 }
 
 func Load() (*Config, error) {

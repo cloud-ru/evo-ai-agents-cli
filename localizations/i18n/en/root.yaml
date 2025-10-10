@@ -1,5 +1,13 @@
-hello: hello
-how_are_you: How are you?
-whats_your_name: "What's your name?"
-hello_my_name_is: Hello my name is {{.name}}
-hello_firstname_lastname: Hello {{.firstname}} {{.lastname}}
+root_short: "AI Agents CLI - tool for managing agents and MCP servers"
+root_long: |
+  AI Agents CLI is a powerful command-line tool for managing 
+  AI agents, MCP servers, and agent systems in Cloud.ru.
+  
+  Key features:
+  • MCP server management (create, update, delete, deploy)
+  • AI agent management
+  • Agent system management
+  • CI/CD integration
+  • Beautiful interface with colored output
+  
+  Use --help for detailed command information.

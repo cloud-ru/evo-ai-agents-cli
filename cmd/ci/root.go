@@ -1,10 +1,9 @@
-package agent
+package ci
 
 import (
 	"github.com/charmbracelet/log"
 	"github.com/cloudru/ai-agents-cli/internal/api"
 	"github.com/cloudru/ai-agents-cli/internal/config"
-	"github.com/cloudru/ai-agents-cli/localizations"
 	"github.com/spf13/cobra"
 )
 
@@ -15,9 +14,9 @@ var (
 
 // RootCMD represents the base command when called without any subcommands
 var RootCMD = &cobra.Command{
-	Use:   "agents",
-	Short: localizations.Localization.Get("root_short"),
-	Long:  localizations.Localization.Get("root_long"),
+	Use:   "ci",
+	Short: "CI/CD функции",
+	Long:  "Команды для интеграции с CI/CD процессами",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Показываем справку если нет подкоманд
 		cmd.Help()

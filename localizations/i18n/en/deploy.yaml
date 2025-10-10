@@ -1,5 +1,13 @@
-hello: hello
-how_are_you: How are you?
-whats_your_name: "What's your name?"
-hello_my_name_is: Hello my name is {{.name}}
-hello_firstname_lastname: Hello {{.firstname}} {{.lastname}}
+deploy_short: "Deploy resources from configuration file"
+deploy_long: |
+  The deploy command allows you to deploy resources (MCP servers, agents, systems) 
+  from a configuration file in YAML or JSON format.
+  
+  Supported formats:
+  • YAML (.yaml, .yml)
+  • JSON (.json)
+  
+  Usage examples:
+  • ai-agents-cli mcp-servers deploy                    # Uses mcp-servers.yaml
+  • ai-agents-cli mcp-servers deploy config.json        # Specified file
+  • ai-agents-cli mcp-servers deploy --dry-run          # Preview mode

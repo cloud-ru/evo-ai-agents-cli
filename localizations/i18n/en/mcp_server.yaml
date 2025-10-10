@@ -1,0 +1,18 @@
+mcp_server_short: "Manage MCP servers"
+mcp_server_long: |
+  Commands for managing MCP (Model Context Protocol) servers.
+  
+  MCP servers provide tools and capabilities for working with external 
+  systems and data. They can be integrated with AI agents to extend 
+  their functionality.
+  
+  Available commands:
+  • list     - List all MCP servers
+  • get      - Get information about a specific server
+  • create   - Create a new server
+  • update   - Update an existing server
+  • delete   - Delete a server
+  • deploy   - Deploy from configuration
+  • resume   - Resume server operation
+  • suspend  - Suspend server operation
+  • history  - View operation history

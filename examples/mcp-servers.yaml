@@ -2,3 +2,24 @@
 
 mcp-servers:
   - name: "my_simple_mcp"
+    description: "Простой MCP сервер для демонстрации"
+    options:
+      host: "localhost"
+      port: 8080
+      timeout: 30
+      retries: 3
+      
+  - name: "database_mcp"
+    description: "MCP сервер для работы с базой данных"
+    options:
+      connection_string: "postgresql://user:pass@localhost/db"
+      max_connections: 10
+      query_timeout: 60
+      
+  - name: "api_mcp"
+    description: "MCP сервер для интеграции с внешними API"
+    options:
+      base_url: "https://api.example.com"
+      api_key: "${API_KEY}"
+      rate_limit: 100
+      timeout: 30

@@ -1,33 +1,51 @@
 # yaml-language-server: $schema=../schemas/schema.json
 
 agents:
-  - name: "simple-agent" #uniq name
-    llm:
-      model: gpt
+  - name: "customer_support_agent"
+    description: "AI агент для поддержки клиентов"
     options:
-    prompt: github_todo_agent_prompt #prompt name from prompts.yaml
-    source:
-      simple: {}
-    description: "Базовый агент для управления задачами"
-    mcp-servers:
-      - name: "my_simple_mcp"
-
-  - name: "agent_from_docker_image" #uniq name
-    model: gpt
-    prompt: github_todo_agent_prompt #prompt name from prompts.yaml
-    source:
-      artifact_registry:
-        image: "your-registry.cr.cloud.ru/marketplace-agent:latest"
-      marketplace:
-        name: "github-todo-manager"
-    description: "Агент с кастомным образом"
+      personality: "helpful and professional"
+      response_style: "conversational"
+      max_conversation_turns: 10
+    llm_options:
+      provider: "openai"
+      model: "gpt-4"
+      temperature: 0.7
+      max_tokens: 1000
+      api_key: "${OPENAI_API_KEY}"
     mcp_servers:
-      - name: "my_simple_mcp"
-
-  - name: "agent_from_marketplace" #uniq name
-    model: gpt
-    prompt: github_todo_agent_prompt
-    source:
-      marketplace:
-        name: "github-todo-manager"
-    description: "Агент из Marketplace"
+      - "database_mcp"
+      - "ticket_system_mcp"
+      
+  - name: "data_analyst_agent"
+    description: "Агент для анализа данных и создания отчетов"
+    options:
+      analysis_depth: "detailed"
+      visualization_preference: "charts"
+      report_format: "pdf"
+    llm_options:
+      provider: "anthropic"
+      model: "claude-3-sonnet"
+      temperature: 0.3
+      max_tokens: 2000
+      api_key: "${ANTHROPIC_API_KEY}"
+    mcp_servers:
+      - "database_mcp"
+      - "api_mcp"
+      - "visualization_mcp"
+      
+  - name: "code_review_agent"
+    description: "Агент для автоматического ревью кода"
+    options:
+      review_scope: "security,performance,style"
+      severity_threshold: "medium"
+      auto_approve: false
+    llm_options:
+      provider: "openai"
+      model: "gpt-4"
+      temperature: 0.2
+      max_tokens: 1500
+      api_key: "${OPENAI_API_KEY}"
+    mcp_servers:
+      - "git_mcp"
+      - "security_scanner_mcp"

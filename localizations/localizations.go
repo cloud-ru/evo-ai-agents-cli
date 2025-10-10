@@ -12,17 +12,17 @@ import (
 )
 
 var localizations = map[string]string{
-	"en.messages.hello": "hello",
+	"en.messages.hello":                    "hello",
 	"en.messages.hello_firstname_lastname": "Hello {{.firstname}} {{.lastname}}",
-	"en.messages.hello_my_name_is": "Hello my name is {{.name}}",
-	"en.messages.how_are_you": "How are you?",
-	"en.messages.whats_your_name": "What's your name?",
+	"en.messages.hello_my_name_is":         "Hello my name is {{.name}}",
+	"en.messages.how_are_you":              "How are you?",
+	"en.messages.whats_your_name":          "What's your name?",
 }
 
 type Replacements map[string]interface{}
 
 type Localizer struct {
-	Locale	 string
+	Locale         string
 	FallbackLocale string
 	Localizations  map[string]string
 }
@@ -58,11 +58,11 @@ func (t Localizer) GetWithLocale(locale, key string, replacements ...*Replacemen
 		}
 	}
 
-        // If the str doesn't have any substitutions, no need to
-        // template.Execute.
+	// If the str doesn't have any substitutions, no need to
+	// template.Execute.
 	if strings.Index(str, "}}") == -1 {
-                return str
-        }
+		return str
+	}
 
 	return t.replace(str, replacements...)
 }
