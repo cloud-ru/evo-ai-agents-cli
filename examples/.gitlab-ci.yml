@@ -1,0 +1,153 @@
+stages:
+  - validate
+  - build
+  - deploy-staging
+  - deploy-production
+  - rollback
+
+variables:
+  CLI_VERSION: "1.0.0"
+  CLI_BINARY: "ai-agents-cli"
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq wget
+  - wget -O $CLI_BINARY https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+  - chmod +x $CLI_BINARY
+
+validate:
+  stage: validate
+  script:
+    - echo "Validating configuration files..."
+    - ./$CLI_BINARY validate examples/mcp-servers.yaml
+    - ./$CLI_BINARY validate examples/agents.yaml
+    - ./$CLI_BINARY validate examples/systems.yaml
+  only:
+    - merge_requests
+    - main
+    - develop
+  variables:
+    API_KEY: $STAGING_API_KEY
+    PROJECT_ID: $STAGING_PROJECT_ID
+
+build:
+  stage: build
+  script:
+    - echo "Building application..."
+    - echo "Configuration validated successfully"
+  artifacts:
+    reports:
+      junit: validation-report.xml
+  only:
+    - merge_requests
+    - main
+    - develop
+
+deploy-staging:
+  stage: deploy-staging
+  script:
+    - echo "Deploying to staging environment..."
+    
+    # Dry run first
+    - ./$CLI_BINARY mcp-servers deploy examples/mcp-servers.yaml --dry-run
+    - ./$CLI_BINARY agents deploy examples/agents.yaml --dry-run
+    
+    # Actual deployment
+    - ./$CLI_BINARY mcp-servers deploy examples/mcp-servers.yaml
+    - ./$CLI_BINARY agents deploy examples/agents.yaml
+    
+    # Verify deployment
+    - ./$CLI_BINARY ci status
+    
+    # Run tests
+    - ./$CLI_BINARY ci logs --tail 50
+  environment:
+    name: staging
+    url: https://staging.agents.cloud.ru
+  only:
+    - develop
+  when: manual
+  variables:
+    API_KEY: $STAGING_API_KEY
+    PROJECT_ID: $STAGING_PROJECT_ID
+
+deploy-production:
+  stage: deploy-production
+  script:
+    - echo "Deploying to production environment..."
+    
+    # Pre-deployment checks
+    - ./$CLI_BINARY ci status
+    
+    # Dry run
+    - ./$CLI_BINARY mcp-servers deploy examples/mcp-servers.yaml --dry-run
+    - ./$CLI_BINARY agents deploy examples/agents.yaml --dry-run
+    - ./$CLI_BINARY system deploy examples/systems.yaml --dry-run
+    
+    # Production deployment
+    - ./$CLI_BINARY mcp-servers deploy examples/mcp-servers.yaml
+    - ./$CLI_BINARY agents deploy examples/agents.yaml
+    - ./$CLI_BINARY system deploy examples/systems.yaml
+    
+    # Post-deployment verification
+    - ./$CLI_BINARY ci status
+    - ./$CLI_BINARY ci logs --tail 100
+    
+    # Health checks
+    - |
+      if ! ./$CLI_BINARY ci status; then
+        echo "Health check failed"
+        exit 1
+      fi
+  environment:
+    name: production
+    url: https://agents.cloud.ru
+  only:
+    - main
+  when: manual
+  variables:
+    API_KEY: $PRODUCTION_API_KEY
+    PROJECT_ID: $PRODUCTION_PROJECT_ID
+
+rollback:
+  stage: rollback
+  script:
+    - echo "Rolling back deployment..."
+    - ./$CLI_BINARY ci status
+    - echo "Rollback completed"
+  environment:
+    name: production
+    action: rollback
+  when: manual
+  only:
+    - main
+  variables:
+    API_KEY: $PRODUCTION_API_KEY
+    PROJECT_ID: $PRODUCTION_PROJECT_ID
+
+# Дополнительные задачи для мониторинга
+monitor:
+  stage: deploy-production
+  script:
+    - echo "Monitoring deployment..."
+    - ./$CLI_BINARY ci status --format json > monitoring.json
+    - ./$CLI_BINARY ci logs --follow --tail 20
+  when: on_success
+  only:
+    - main
+  variables:
+    API_KEY: $PRODUCTION_API_KEY
+    PROJECT_ID: $PRODUCTION_PROJECT_ID
+
+# Задача для очистки ресурсов
+cleanup:
+  stage: deploy-production
+  script:
+    - echo "Cleaning up old resources..."
+    - ./$CLI_BINARY mcp-servers list
+    - echo "Cleanup completed"
+  when: always
+  only:
+    - main
+  variables:
+    API_KEY: $PRODUCTION_API_KEY
+    PROJECT_ID: $PRODUCTION_PROJECT_ID

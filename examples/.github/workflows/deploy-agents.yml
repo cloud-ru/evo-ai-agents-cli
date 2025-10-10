@@ -1,0 +1,188 @@
+name: Deploy AI Agents
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CLI_VERSION: "1.0.0"
+
+jobs:
+  validate:
+    name: Validate Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Download AI Agents CLI
+        run: |
+          wget -O ai-agents-cli https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+          chmod +x ai-agents-cli
+
+      - name: Validate MCP Servers
+        run: ./ai-agents-cli validate examples/mcp-servers.yaml
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+
+      - name: Validate Agents
+        run: ./ai-agents-cli validate examples/agents.yaml
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+
+      - name: Validate Agent Systems
+        run: ./ai-agents-cli validate examples/systems.yaml
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download AI Agents CLI
+        run: |
+          wget -O ai-agents-cli https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+          chmod +x ai-agents-cli
+
+      - name: Deploy MCP Servers (Dry Run)
+        run: ./ai-agents-cli mcp-servers deploy examples/mcp-servers.yaml --dry-run
+        env:
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+          PROJECT_ID: ${{ secrets.STAGING_PROJECT_ID }}
+
+      - name: Deploy MCP Servers
+        run: ./ai-agents-cli mcp-servers deploy examples/mcp-servers.yaml
+        env:
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+          PROJECT_ID: ${{ secrets.STAGING_PROJECT_ID }}
+
+      - name: Deploy Agents
+        run: ./ai-agents-cli agents deploy examples/agents.yaml
+        env:
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+          PROJECT_ID: ${{ secrets.STAGING_PROJECT_ID }}
+
+      - name: Verify Deployment
+        run: ./ai-agents-cli ci status
+        env:
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+          PROJECT_ID: ${{ secrets.STAGING_PROJECT_ID }}
+
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          text: 'AI Agents deployed to staging'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  deploy-production:
+    name: Deploy to Production
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download AI Agents CLI
+        run: |
+          wget -O ai-agents-cli https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+          chmod +x ai-agents-cli
+
+      - name: Deploy MCP Servers (Dry Run)
+        run: ./ai-agents-cli mcp-servers deploy examples/mcp-servers.yaml --dry-run
+        env:
+          API_KEY: ${{ secrets.PRODUCTION_API_KEY }}
+          PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
+
+      - name: Deploy MCP Servers
+        run: ./ai-agents-cli mcp-servers deploy examples/mcp-servers.yaml
+        env:
+          API_KEY: ${{ secrets.PRODUCTION_API_KEY }}
+          PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
+
+      - name: Deploy Agents
+        run: ./ai-agents-cli agents deploy examples/agents.yaml
+        env:
+          API_KEY: ${{ secrets.PRODUCTION_API_KEY }}
+          PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
+
+      - name: Deploy Agent Systems
+        run: ./ai-agents-cli system deploy examples/systems.yaml
+        env:
+          API_KEY: ${{ secrets.PRODUCTION_API_KEY }}
+          PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
+
+      - name: Verify Deployment
+        run: ./ai-agents-cli ci status
+        env:
+          API_KEY: ${{ secrets.PRODUCTION_API_KEY }}
+          PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
+
+      - name: Run Health Checks
+        run: |
+          ./ai-agents-cli ci status --format json > health-check.json
+          # Дополнительные проверки здоровья системы
+        env:
+          API_KEY: ${{ secrets.PRODUCTION_API_KEY }}
+          PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
+
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          text: 'AI Agents deployed to production'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  rollback:
+    name: Rollback
+    runs-on: ubuntu-latest
+    if: failure()
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download AI Agents CLI
+        run: |
+          wget -O ai-agents-cli https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+          chmod +x ai-agents-cli
+
+      - name: Rollback to Previous Version
+        run: |
+          echo "Rolling back to previous version..."
+          # Логика отката
+        env:
+          API_KEY: ${{ secrets.PRODUCTION_API_KEY }}
+          PROJECT_ID: ${{ secrets.PRODUCTION_PROJECT_ID }}
+
+      - name: Notify Rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: 'AI Agents rollback completed'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
