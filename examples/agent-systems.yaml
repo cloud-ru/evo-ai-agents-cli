@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../schemas/schema.json
 
 agent-systems:
-  - name: "customer_support_system"
+  - name: "customer-support-system"
     description: "Система поддержки клиентов с несколькими агентами"
     options:
       orchestration: "sequential"
@@ -9,11 +9,11 @@ agent-systems:
       retry_attempts: 3
       fallback_enabled: true
     agents:
-      - "customer_support"
-      - "escalation_agent"
-      - "knowledge_base_agent"
+      - "customer-support"
+      - "escalation-agent"
+      - "knowledge-base-agent"
       
-  - name: "data_analysis_system"
+  - name: "data-analysis-system"
     description: "Система анализа данных с параллельной обработкой"
     options:
       orchestration: "parallel"
@@ -21,11 +21,11 @@ agent-systems:
       timeout: 600
       result_aggregation: "merge"
     agents:
-      - "data_analyst"
-      - "report_generator"
-      - "visualization_agent"
+      - "data-analyst"
+      - "report-generator"
+      - "visualization-agent"
       
-  - name: "code_review_system"
+  - name: "code-review-system"
     description: "Система автоматического ревью кода"
     options:
       orchestration: "pipeline"
@@ -36,7 +36,7 @@ agent-systems:
         - "documentation_review"
       timeout: 1800
     agents:
-      - "security_reviewer"
-      - "performance_analyzer"
-      - "style_checker"
-      - "documentation_agent"
+      - "security-reviewer"
+      - "performance-analyzer"
+      - "style-checker"
+      - "documentation-agent"

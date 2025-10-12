@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/log"
+	"gopkg.in/yaml.v3"
 )
 
 // ValidationError представляет ошибку валидации
@@ -81,8 +82,16 @@ func (v *ConfigValidator) ValidateFile(filePath string) (*ValidationResult, erro
 			}, nil
 		}
 	case ".yaml", ".yml":
-		// Для YAML нужен дополнительный пакет, пока используем базовую валидацию
-		return v.validateYAMLContent(data)
+		// Используем полноценный YAML парсер
+		if err := yaml.Unmarshal(data, &config); err != nil {
+			return &ValidationResult{
+				Valid: false,
+				Errors: []ValidationError{{
+					Field:   "yaml",
+					Message: fmt.Sprintf("Invalid YAML: %v", err),
+				}},
+			}, nil
+		}
 	default:
 		return &ValidationResult{
 			Valid: false,

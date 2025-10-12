@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../schemas/schema.json
 
 agents:
-  - name: "customer_support_agent"
+  - name: "customer-support-agent"
     description: "AI агент для поддержки клиентов"
     options:
       personality: "helpful and professional"
@@ -14,10 +14,10 @@ agents:
       max_tokens: 1000
       api_key: "${OPENAI_API_KEY}"
     mcp_servers:
-      - "database_mcp"
-      - "ticket_system_mcp"
+      - "database-mcp"
+      - "ticket-system-mcp"
       
-  - name: "data_analyst_agent"
+  - name: "data-analyst-agent"
     description: "Агент для анализа данных и создания отчетов"
     options:
       analysis_depth: "detailed"
@@ -30,11 +30,11 @@ agents:
       max_tokens: 2000
       api_key: "${ANTHROPIC_API_KEY}"
     mcp_servers:
-      - "database_mcp"
-      - "api_mcp"
-      - "visualization_mcp"
+      - "database-mcp"
+      - "api-mcp"
+      - "visualization-mcp"
       
-  - name: "code_review_agent"
+  - name: "code-review-agent"
     description: "Агент для автоматического ревью кода"
     options:
       review_scope: "security,performance,style"
@@ -47,5 +47,5 @@ agents:
       max_tokens: 1500
       api_key: "${OPENAI_API_KEY}"
     mcp_servers:
-      - "git_mcp"
-      - "security_scanner_mcp"
+      - "git-mcp"
+      - "security-scanner-mcp"

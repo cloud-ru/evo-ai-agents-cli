@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../schemas/schema.json
 
 mcp-servers:
-  - name: "my_simple_mcp"
+  - name: "my-simple-mcp"
     description: "Простой MCP сервер для демонстрации"
     options:
       host: "localhost"
@@ -9,14 +9,14 @@ mcp-servers:
       timeout: 30
       retries: 3
       
-  - name: "database_mcp"
+  - name: "database-mcp"
     description: "MCP сервер для работы с базой данных"
     options:
       connection_string: "postgresql://user:pass@localhost/db"
       max_connections: 10
       query_timeout: 60
       
-  - name: "api_mcp"
+  - name: "api-mcp"
     description: "MCP сервер для интеграции с внешними API"
     options:
       base_url: "https://api.example.com"

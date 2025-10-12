@@ -19,16 +19,35 @@ var (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Список агентов",
-	Long:  "Показывает список всех агентов в проекте",
+	Short: "Список AI агентов",
+	Long: `Показывает список всех AI агентов в проекте.
+
+Команда отображает таблицу с информацией о всех агентах:
+• ID агента
+• Название агента
+• Текущий статус
+• Дата создания
+• Дата последнего обновления
+
+Поддерживает постраничную навигацию с помощью флагов --limit и --offset.
+
+Примеры использования:
+  ai-agents-cli agents list
+  ai-agents-cli agents list --limit 10
+  ai-agents-cli agents list --offset 20 --limit 5`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
+
+		log.Info("Запрос списка агентов", "limit", agentLimit, "offset", agentOffset)
 
 		// Получаем список агентов
 		agents, err := apiClient.Agents.List(ctx, agentLimit, agentOffset)
 		if err != nil {
+			log.Error("Ошибка получения списка агентов", "error", err)
 			log.Fatal("Failed to list agents", "error", err)
 		}
+
+		log.Info("Список агентов получен", "total", agents.Total, "count", len(agents.Data))
 
 		// Создаем стили для вывода
 		headerStyle := lipgloss.NewStyle().

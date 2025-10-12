@@ -23,15 +23,19 @@ type Config struct {
 	BulkOperationsConcurrencyFactor int           `env:"BULK_OPERATIONS_CONCURRENCY" envDefault:"20"`
 
 	IntegrationApiGrpcAddr string `env:"PUBLIC_API_ENDPOINT"          envDefault:"ai-agents.api.cloud.ru"`
-	APIKey                 string `env:"API_KEY"                      envDefault:""`
 	ProjectID              string `env:"PROJECT_ID"                   envDefault:""`
+	
+	// IAM аутентификация
+	IAMKeyID    string `env:"IAM_KEY_ID"    envDefault:""`
+	IAMSecret   string `env:"IAM_SECRET"    envDefault:""`
+	IAMEndpoint string `env:"IAM_ENDPOINT"  envDefault:"https://iam.api.cloud.ru"`
 }
 
 func Load() (*Config, error) {
 	cfg := &Config{}
 	err := env.Parse(cfg)
 	if err != nil {
-		log.Fatalf("%+v", err)
+		log.Errorf("Failed to parse environment variables: %+v", err)
 		return nil, err
 	}
 	return cfg, err

@@ -18,24 +18,56 @@ var (
 
 // validateCmd represents the validate command
 var validateCmd = &cobra.Command{
-	Use:   "validate [config-file]",
+	Use:   "validate [config-file|directory]",
 	Short: "Валидация конфигурационных файлов",
-	Long:  "Проверяет корректность конфигурационных файлов перед развертыванием",
+	Long: `Валидация конфигурационных файлов для AI Agents.
+
+Эта команда проверяет корректность YAML и JSON файлов конфигурации
+перед их развертыванием в облачной платформе.
+
+Поддерживаемые форматы:
+• YAML файлы (.yaml, .yml)
+• JSON файлы (.json)
+
+Поддерживаемые типы конфигураций:
+• Агенты (agents)
+• MCP серверы (mcp-servers) 
+• Системы агентов (agent-systems)
+
+Примеры использования:
+  ai-agents-cli validate examples/agents.yaml
+  ai-agents-cli validate examples/
+  ai-agents-cli validate --file config.yaml`,
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		log.Info("Запуск валидации конфигурационных файлов")
+		
 		// Создаем валидатор
 		configValidator := validator.NewConfigValidator()
+		log.Debug("Валидатор создан")
 
 		// Загружаем схемы
+		log.Info("Загрузка схем валидации")
 		if err := loadSchemas(configValidator); err != nil {
 			log.Warn("Failed to load schemas", "error", err)
+		} else {
+			log.Info("Схемы валидации загружены успешно")
 		}
 
 		// Определяем файлы для валидации
 		var files []string
 
 		if len(args) > 0 {
-			files = []string{args[0]}
+			// Проверяем, является ли аргумент директорией
+			if info, err := os.Stat(args[0]); err == nil && info.IsDir() {
+				var err error
+				files, err = findConfigFiles(args[0])
+				if err != nil {
+					log.Fatal("Failed to find config files", "error", err, "dir", args[0])
+				}
+			} else {
+				files = []string{args[0]}
+			}
 		} else if validateFile != "" {
 			files = []string{validateFile}
 		} else if validateDir != "" {
@@ -55,8 +87,11 @@ var validateCmd = &cobra.Command{
 		}
 
 		if len(files) == 0 {
+			log.Error("Конфигурационные файлы не найдены")
 			log.Fatal("No configuration files found")
 		}
+
+		log.Info("Найдено файлов для валидации", "count", len(files), "files", files)
 
 		// Валидируем каждый файл
 		allValid := true
@@ -71,19 +106,21 @@ var validateCmd = &cobra.Command{
 
 		for _, file := range files {
 			fmt.Printf("Проверка %s...\n", file)
+			log.Debug("Валидация файла", "file", file)
 
 			result, err := configValidator.ValidateFile(file)
 			if err != nil {
-				log.Errorf("Ошибка при валидации %s: %v", file, err)
+				log.Error("Ошибка при валидации файла", "file", file, "error", err)
 				allValid = false
 				continue
 			}
 
 			if !result.Valid {
+				log.Warn("Файл не прошел валидацию", "file", file, "errors", len(result.Errors))
 				allValid = false
 				configValidator.PrintErrors(result)
 			} else {
-				log.Infof("✅ %s валиден", file)
+				log.Info("Файл валиден", "file", file)
 			}
 			fmt.Println()
 		}

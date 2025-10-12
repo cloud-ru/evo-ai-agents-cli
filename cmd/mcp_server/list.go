@@ -20,15 +20,34 @@ var (
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Список MCP серверов",
-	Long:  "Показывает список всех MCP серверов в проекте",
+	Long: `Показывает список всех MCP серверов в проекте.
+
+Команда отображает таблицу с информацией о всех MCP серверах:
+• ID сервера
+• Название сервера
+• Текущий статус
+• Дата создания
+• Дата последнего обновления
+
+Поддерживает постраничную навигацию с помощью флагов --limit и --offset.
+
+Примеры использования:
+  ai-agents-cli mcp-servers list
+  ai-agents-cli mcp-servers list --limit 10
+  ai-agents-cli mcp-servers list --offset 20 --limit 5`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
+
+		log.Info("Запрос списка MCP серверов", "limit", limit, "offset", offset)
 
 		// Получаем список MCP серверов
 		servers, err := apiClient.MCPServers.List(ctx, limit, offset)
 		if err != nil {
+			log.Error("Ошибка получения списка MCP серверов", "error", err)
 			log.Fatal("Failed to list MCP servers", "error", err)
 		}
+
+		log.Info("Список MCP серверов получен", "total", servers.Total, "count", len(servers.Data))
 
 		// Создаем стили для вывода
 		headerStyle := lipgloss.NewStyle().

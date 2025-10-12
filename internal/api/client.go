@@ -10,25 +10,26 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/cloudru/ai-agents-cli/internal/auth"
 )
 
 // Client представляет HTTP клиент для работы с AI Agents API
 type Client struct {
 	baseURL    string
 	httpClient *http.Client
-	apiKey     string
 	projectID  string
+	auth       auth.IAMAuthServiceInterface
 }
 
-// NewClient создает новый экземпляр API клиента
-func NewClient(baseURL, apiKey, projectID string) *Client {
+// NewClient создает новый экземпляр API клиента с IAM аутентификацией
+func NewClient(baseURL, projectID string, authService auth.IAMAuthServiceInterface) *Client {
 	return &Client{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
-		apiKey:    apiKey,
 		projectID: projectID,
+		auth:      authService,
 	}
 }
 
@@ -74,19 +75,32 @@ func (c *Client) doRequest(ctx context.Context, opts RequestOptions) (*http.Resp
 
 	// Устанавливаем заголовки
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	
+	// Получаем токен для аутентификации
+	if c.auth != nil {
+		log.Debug("Getting auth token for API request")
+		token, err := c.auth.GetToken(ctx)
+		if err != nil {
+			log.Error("Failed to get auth token", "error", err)
+			return nil, fmt.Errorf("failed to get auth token: %w", err)
+		}
+		log.Debug("Auth token obtained successfully", "token_length", len(token))
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 
 	for key, value := range opts.Headers {
 		req.Header.Set(key, value)
 	}
 
-	log.Debug("Making API request", "method", opts.Method, "url", url)
+	log.Debug("Making API request", "method", opts.Method, "url", url, "headers", req.Header)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		log.Error("Failed to execute API request", "error", err, "url", url)
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 
+	log.Debug("API request completed", "status", resp.StatusCode, "url", url)
 	return resp, nil
 }
 
@@ -96,10 +110,15 @@ func (c *Client) parseResponse(resp *http.Response, target interface{}) error {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		log.Error("Failed to read response body", "error", err, "status", resp.StatusCode)
 		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
+	log.Debug("API response received", "status", resp.StatusCode, "body_length", len(body))
+
 	if resp.StatusCode >= 400 {
+		log.Error("API error response", "status", resp.StatusCode, "body", string(body))
+		
 		var errorResp struct {
 			Error struct {
 				Code    int    `json:"code"`
@@ -108,6 +127,7 @@ func (c *Client) parseResponse(resp *http.Response, target interface{}) error {
 		}
 
 		if err := json.Unmarshal(body, &errorResp); err != nil {
+			log.Error("Failed to parse error response", "error", err, "body", string(body))
 			return fmt.Errorf("API error (status %d): %s", resp.StatusCode, string(body))
 		}
 
@@ -116,8 +136,10 @@ func (c *Client) parseResponse(resp *http.Response, target interface{}) error {
 
 	if target != nil {
 		if err := json.Unmarshal(body, target); err != nil {
+			log.Error("Failed to parse response JSON", "error", err, "body", string(body))
 			return fmt.Errorf("failed to parse response: %w", err)
 		}
+		log.Debug("Response parsed successfully")
 	}
 
 	return nil

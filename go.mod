@@ -1,6 +1,6 @@
 module github.com/cloudru/ai-agents-cli
 
-go 1.24.4
+go 1.24.3
 
 require (
 	github.com/caarlos0/env/v11 v11.3.1
@@ -10,6 +10,7 @@ require (
 	github.com/spf13/cobra v1.10.1
 	go.opentelemetry.io/otel v1.38.0
 	go.opentelemetry.io/otel/sdk v1.38.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -35,5 +36,4 @@ require (
 	go.opentelemetry.io/otel/trace v1.38.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/sys v0.36.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
