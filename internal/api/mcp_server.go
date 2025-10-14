@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"time"
 )
 
 // MCPServer представляет MCP сервер
@@ -17,6 +16,7 @@ type MCPServer struct {
 	ImageSource  map[string]interface{} `json:"imageSource,omitempty"`
 	Options      map[string]interface{} `json:"options,omitempty"`
 	Tools        []Tool                 `json:"tools,omitempty"`
+	PublicURL    string                 `json:"publicUrl,omitempty"`
 	CreatedAt    CustomTime             `json:"createdAt"`
 	UpdatedAt    CustomTime             `json:"updatedAt"`
 	CreatedBy    string                 `json:"createdBy,omitempty"`
@@ -53,15 +53,6 @@ type MCPServerListResponse struct {
 // MCPServerHistoryResponse представляет ответ с историей MCP сервера
 type MCPServerHistoryResponse struct {
 	Data []HistoryEntry `json:"data"`
-}
-
-// HistoryEntry представляет запись в истории
-type HistoryEntry struct {
-	ID        string    `json:"id"`
-	Action    string    `json:"action"`
-	Status    string    `json:"status"`
-	Message   string    `json:"message"`
-	CreatedAt time.Time `json:"created_at"`
 }
 
 // MCPServerService предоставляет методы для работы с MCP серверами

@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/di"
-	"github.com/cloudru/ai-agents-cli/internal/ui"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -47,9 +47,18 @@ var getCmd = &cobra.Command{
 			return
 		}
 
-		// Показываем простую статичную версию
-		result := ui.RenderAgentDetails(agent, ctx, container)
-		fmt.Println(result)
+		// Показываем детальную информацию с табами
+		if isTerminal() {
+			// Интерактивная версия с табами
+			program := ui.NewAgentDetailViewModel(agent)
+			if err := program.Start(); err != nil {
+				log.Fatal("Failed to start detail view", "error", err)
+			}
+		} else {
+			// Простая версия для не-терминала
+			result := ui.RenderAgentDetails(agent, ctx, container)
+			fmt.Println(result)
+		}
 	},
 }
 

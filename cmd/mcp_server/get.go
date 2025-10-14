@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var (
@@ -46,85 +47,25 @@ var getCmd = &cobra.Command{
 			return
 		}
 
-		// Создаем стили для вывода
-		headerStyle := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("205")).
-			Border(lipgloss.RoundedBorder()).
-			Padding(0, 1)
-
-		labelStyle := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("99"))
-
-		valueStyle := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("252"))
-
-		statusStyle := lipgloss.NewStyle().
-			Bold(true)
-
-		// Выводим заголовок
-		fmt.Println(headerStyle.Render("🔧 Информация о MCP сервере"))
-		fmt.Println()
-
-		// Основная информация
-		fmt.Printf("%s: %s\n", labelStyle.Render("ID"), valueStyle.Render(server.ID))
-		fmt.Printf("%s: %s\n", labelStyle.Render("Название"), valueStyle.Render(server.Name))
-
-		if server.Description != "" {
-			fmt.Printf("%s: %s\n", labelStyle.Render("Описание"), valueStyle.Render(server.Description))
-		}
-
-		// Статус
-		status := server.Status
-		switch status {
-		case "ACTIVE":
-			status = statusStyle.Copy().Foreground(lipgloss.Color("2")).Render("🟢 Активен")
-		case "SUSPENDED":
-			status = statusStyle.Copy().Foreground(lipgloss.Color("3")).Render("🟡 Приостановлен")
-		case "ERROR":
-			status = statusStyle.Copy().Foreground(lipgloss.Color("1")).Render("🔴 Ошибка")
-		default:
-			status = statusStyle.Copy().Foreground(lipgloss.Color("8")).Render("⚪ " + status)
-		}
-		fmt.Printf("%s: %s\n", labelStyle.Render("Статус"), status)
-
-		// Даты
-		fmt.Printf("%s: %s\n", labelStyle.Render("Создан"), valueStyle.Render(server.CreatedAt.Time.Format("02.01.2006 15:04:05")))
-		fmt.Printf("%s: %s\n", labelStyle.Render("Обновлен"), valueStyle.Render(server.UpdatedAt.Time.Format("02.01.2006 15:04:05")))
-
-		// Статистика
-		fmt.Println()
-		fmt.Println(labelStyle.Render("📊 Статистика:"))
-		fmt.Printf("  %s: %s\n", labelStyle.Render("Опций"), valueStyle.Render(fmt.Sprintf("%d", len(server.Options))))
-
-		// Опции
-		if len(server.Options) > 0 {
-			fmt.Println()
-			fmt.Println(labelStyle.Render("⚙️  Опции:"))
-			for key, value := range server.Options {
-				valueStr := fmt.Sprintf("%v", value)
-				if len(valueStr) > 60 {
-					valueStr = valueStr[:60] + "..."
-				}
-				fmt.Printf("  %s: %s\n", labelStyle.Render(key), valueStyle.Render(valueStr))
+		// Показываем детальную информацию с табами
+		if isTerminal() {
+			// Интерактивная версия с табами
+			program := ui.NewMCPDetailViewModel(ui.NewMCPDetailModel(server))
+			if err := program.Start(); err != nil {
+				log.Fatal("Failed to start detail view", "error", err)
 			}
 		} else {
-			fmt.Println()
-			fmt.Println(labelStyle.Render("⚙️  Опции:") + " " + valueStyle.Render("Нет настроек"))
-		}
-
-		// Инструменты
-		if len(server.Tools) > 0 {
-			fmt.Println()
-			fmt.Println(labelStyle.Render("🛠️  Инструменты:"))
-			for _, tool := range server.Tools {
-				fmt.Printf("  • %s: %s\n",
-					labelStyle.Render(tool.Name),
-					valueStyle.Render(tool.Description))
-			}
+			// Простая версия для не-терминала
+			fmt.Printf("🔧 MCP Сервер: %s\n", server.Name)
+			fmt.Printf("🆔 ID: %s\n", server.ID)
+			fmt.Printf("📊 Статус: %s\n", server.Status)
 		}
 	},
+}
+
+// isTerminal проверяет, является ли терминал терминалом
+func isTerminal() bool {
+	return term.IsTerminal(int(os.Stdout.Fd()))
 }
 
 func init() {

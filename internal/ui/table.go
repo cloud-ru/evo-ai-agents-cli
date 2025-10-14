@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/api"
-	"github.com/cloudru/ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/api"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
 )
 
 // TableInterface определяет интерфейс для работы с таблицами
@@ -27,6 +26,7 @@ type TableProgram struct {
 	table         TableInterface
 	showDetails   bool
 	selectedAgent *api.Agent
+	activeTab     int
 }
 
 // NewTableProgram создает новую программу таблицы
@@ -35,6 +35,7 @@ func NewTableProgram(table TableInterface) *TableProgram {
 		table:         table,
 		showDetails:   false,
 		selectedAgent: nil,
+		activeTab:     0,
 	}
 }
 
@@ -96,15 +97,15 @@ func (p *TableProgram) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if len(selectedRow) > 0 {
 					agentID := selectedRow[0] // ID из первого элемента
 
-					// Получаем полную информацию об агенте через API
-					ctx := context.Background()
-					container := di.GetContainer()
-					apiClient := container.GetAPI()
-
-					agent, err := apiClient.Agents.Get(ctx, agentID)
-					if err != nil {
-						log.Error("Ошибка получения информации об агенте", "error", err, "agent_id", agentID)
-						return p, nil
+					// Создаем агента из данных таблицы вместо API запроса
+					// Это избегает ошибок 404 и работает быстрее
+					agent := &api.Agent{
+						ID:          selectedRow[0],
+						Name:        selectedRow[1],
+						Description: selectedRow[2],
+						Status:      selectedRow[3],
+						AgentType:   selectedRow[4],
+						// Остальные поля можно заполнить по умолчанию
 					}
 
 					p.selectedAgent = agent
@@ -117,6 +118,26 @@ func (p *TableProgram) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if p.showDetails {
 				p.showDetails = false
 				p.selectedAgent = nil
+				return p, nil
+			}
+		}
+
+		// Если мы в режиме детального просмотра, обрабатываем навигацию по табам
+		if p.showDetails && p.selectedAgent != nil {
+			detailModel := NewAgentDetailModel(p.selectedAgent)
+			switch msg.String() {
+			case "right", "l", "n", "tab":
+				p.activeTab = (p.activeTab + 1) % len(detailModel.Tabs.Tabs)
+				return p, nil
+			case "left", "h", "p", "shift+tab":
+				p.activeTab = (p.activeTab - 1 + len(detailModel.Tabs.Tabs)) % len(detailModel.Tabs.Tabs)
+				return p, nil
+			case "1", "2", "3", "4", "5", "6", "7", "8":
+				// Переключение по номерам табов
+				tabIndex := int(msg.String()[0] - '1')
+				if tabIndex >= 0 && tabIndex < len(detailModel.Tabs.Tabs) {
+					p.activeTab = tabIndex
+				}
 				return p, nil
 			}
 		}
@@ -144,17 +165,16 @@ func (p *TableProgram) renderDetails() string {
 		return "Ошибка: агент не выбран"
 	}
 
-	// Используем сохраненного агента
-	ctx := context.Background()
-	container := di.GetContainer()
-
-	// Используем общую функцию для отображения деталей
-	result := RenderAgentDetails(p.selectedAgent, ctx, container)
+	// Создаем детальную модель с табами
+	detailModel := NewAgentDetailModel(p.selectedAgent)
+	detailModel.Tabs.SetActiveTab(p.activeTab)
 
 	// Добавляем инструкцию для возврата к таблице
-	result += fmt.Sprintf("\n\n%s", lipgloss.NewStyle().Foreground(lipgloss.Color("240")).Render("Нажмите 'b' или 'Backspace' для возврата к таблице"))
+	help := "\n\n" + lipgloss.NewStyle().
+		Foreground(lipgloss.Color("240")).
+		Render("←/→ или h/l: переключение табов • 1-8: быстрый переход • b/Backspace: возврат к таблице")
 
-	return result
+	return detailModel.Render() + help
 }
 
 // ShowAgentsTable показывает таблицу агентов
@@ -194,17 +214,18 @@ func ShowAgentsListFromAPI(ctx context.Context, limit, offset int) error {
 			// Получаем тип агента с переводом
 			agentType := FormatAgentType(agent.AgentType)
 
-			// Показываем только ID пользователей в списке (без API запросов)
-			createdByInfo := agent.CreatedBy
-			updatedByInfo := agent.UpdatedBy
+			// Получаем описание или ставим прочерк
+			description := agent.Description
+			if description == "" {
+				description = "—"
+			}
 
 			rows = append(rows, table.Row{
 				agent.ID,
 				agent.Name,
+				description,
 				FormatStatus(agent.Status),
 				agentType,
-				createdByInfo,
-				updatedByInfo,
 				agent.CreatedAt.Time.Format("02.01.2006 15:04"),
 				agent.UpdatedAt.Time.Format("02.01.2006 15:04"),
 			})
@@ -215,12 +236,11 @@ func ShowAgentsListFromAPI(ctx context.Context, limit, offset int) error {
 
 	// Создаем колонки таблицы
 	columns := []table.Column{
-		{Title: "ID", Width: 200},
-		{Title: "Название", Width: 100},
-		{Title: "Статус", Width: 25},
-		{Title: "Тип", Width: 50},
-		{Title: "Создал", Width: 200},
-		{Title: "Изменил", Width: 200},
+		{Title: "ID", Width: 36},
+		{Title: "Название", Width: 25},
+		{Title: "Описание", Width: 40},
+		{Title: "Статус", Width: 20},
+		{Title: "Тип", Width: 25},
 		{Title: "Создан", Width: 16},
 		{Title: "Обновлен", Width: 16},
 	}
@@ -238,18 +258,58 @@ func ShowMCPServersListFromAPI(ctx context.Context, limit, offset int) error {
 	container := di.GetContainer()
 	apiClient := container.GetAPI()
 
-	log.Debug("Запрос списка MCP серверов", "limit", limit, "offset", offset)
+	// Создаем функцию загрузки данных
+	dataLoader := func(ctx context.Context, limit, offset int) ([]table.Row, int, error) {
+		log.Debug("Запрос списка MCP серверов", "limit", limit, "offset", offset)
 
-	servers, err := apiClient.MCPServers.List(ctx, limit, offset)
-	if err != nil {
-		log.Error("Ошибка получения списка MCP серверов", "error", err)
-		return fmt.Errorf("failed to list MCP servers: %w", err)
+		servers, err := apiClient.MCPServers.List(ctx, limit, offset)
+		if err != nil {
+			log.Error("Ошибка получения списка MCP серверов", "error", err)
+			return nil, 0, fmt.Errorf("failed to list MCP servers: %w", err)
+		}
+
+		log.Debug("Список MCP серверов получен", "total", servers.Total, "count", len(servers.Data))
+
+		// Преобразуем серверы в строки таблицы
+		var rows []table.Row
+		for _, server := range servers.Data {
+			// Получаем описание или ставим прочерк
+			description := server.Description
+			if description == "" {
+				description = "—"
+			}
+
+			rows = append(rows, table.Row{
+				server.ID,
+				server.Name,
+				description,
+				FormatStatus(server.Status),
+				fmt.Sprintf("%d", len(server.Tools)),
+				server.CreatedAt.Time.Format("02.01.2006 15:04"),
+				server.UpdatedAt.Time.Format("02.01.2006 15:04"),
+			})
+		}
+
+		return rows, servers.Total, nil
 	}
 
-	log.Debug("Список MCP серверов получен", "total", servers.Total, "count", len(servers.Data))
+	// Создаем колонки таблицы
+	columns := []table.Column{
+		{Title: "ID", Width: 36},
+		{Title: "Название", Width: 25},
+		{Title: "Описание", Width: 40},
+		{Title: "Статус", Width: 20},
+		{Title: "Инструменты", Width: 12},
+		{Title: "Создан", Width: 16},
+		{Title: "Обновлен", Width: 16},
+	}
 
-	title := fmt.Sprintf("📋 MCP Серверы (всего: %d)", servers.Total)
-	return ShowMCPServersTable(servers.Data, title)
+	// Создаем модель таблицы с серверной пагинацией
+	tableModel := NewServerPaginatedTableModel(ctx, "🔧 MCP Серверы", columns, limit, dataLoader)
+
+	// Создаем программу таблицы
+	program := NewTableProgram(tableModel)
+	return program.Run()
 }
 
 // ShowAgentSystemsListFromAPI показывает список систем агентов из API
@@ -682,146 +742,6 @@ func getUpdatedByInfoForUI(ctx context.Context, container *di.Container, userID 
 	return FormatUserName(user.ID, user.FirstName, user.LastName, user.Email)
 }
 
-// FormatAgentType форматирует тип агента с переводом
-func FormatAgentType(agentType string) string {
-	if agentType == "" {
-		return "Неизвестно"
-	}
-
-	// Маппинг типов агентов на русские названия
-	typeTranslations := map[string]string{
-		"AGENT_TYPE_FROM_HUB":        "Из маркетплейса",
-		"AGENT_TYPE_CUSTOM":          "Пользовательский",
-		"AGENT_TYPE_PREDEFINED":      "Предустановленный",
-		"AGENT_TYPE_TEMPLATE":        "Шаблон",
-		"AGENT_TYPE_WORKFLOW":        "Рабочий процесс",
-		"AGENT_TYPE_INTEGRATION":     "Интеграция",
-		"AGENT_TYPE_ANALYTICS":       "Аналитика",
-		"AGENT_TYPE_AUTOMATION":      "Автоматизация",
-		"AGENT_TYPE_CHAT":            "Чат-бот",
-		"AGENT_TYPE_ASSISTANT":       "Ассистент",
-		"AGENT_TYPE_WORKER":          "Работник",
-		"AGENT_TYPE_ANALYZER":        "Анализатор",
-		"AGENT_TYPE_GENERATOR":       "Генератор",
-		"AGENT_TYPE_CLASSIFIER":      "Классификатор",
-		"AGENT_TYPE_TRANSLATOR":      "Переводчик",
-		"AGENT_TYPE_SUMMARIZER":      "Суммаризатор",
-		"AGENT_TYPE_EXTRACTOR":       "Извлекатель",
-		"AGENT_TYPE_VALIDATOR":       "Валидатор",
-		"AGENT_TYPE_OPTIMIZER":       "Оптимизатор",
-		"AGENT_TYPE_MONITOR":         "Монитор",
-		"AGENT_TYPE_SCHEDULER":       "Планировщик",
-		"AGENT_TYPE_ROUTER":          "Маршрутизатор",
-		"AGENT_TYPE_AGGREGATOR":      "Агрегатор",
-		"AGENT_TYPE_FILTER":          "Фильтр",
-		"AGENT_TYPE_TRANSFORMER":     "Трансформер",
-		"AGENT_TYPE_ENRICHER":        "Обогатитель",
-		"AGENT_TYPE_NOTIFIER":        "Уведомитель",
-		"AGENT_TYPE_ARCHIVER":        "Архиватор",
-		"AGENT_TYPE_BACKUP":          "Резервное копирование",
-		"AGENT_TYPE_SYNC":            "Синхронизатор",
-		"AGENT_TYPE_MIGRATOR":        "Мигратор",
-		"AGENT_TYPE_CLEANER":         "Очиститель",
-		"AGENT_TYPE_SECURITY":        "Безопасность",
-		"AGENT_TYPE_AUDIT":           "Аудит",
-		"AGENT_TYPE_COMPLIANCE":      "Соответствие",
-		"AGENT_TYPE_REPORTING":       "Отчетность",
-		"AGENT_TYPE_PREDICTION":      "Прогнозирование",
-		"AGENT_TYPE_RECOMMENDATION":  "Рекомендации",
-		"AGENT_TYPE_PERSONALIZATION": "Персонализация",
-		"AGENT_TYPE_API":             "API",
-		"AGENT_TYPE_WEBHOOK":         "Webhook",
-		"AGENT_TYPE_QUEUE":           "Очередь",
-		"AGENT_TYPE_CACHE":           "Кэш",
-		"AGENT_TYPE_DATABASE":        "База данных",
-		"AGENT_TYPE_FILE":            "Файл",
-		"AGENT_TYPE_EMAIL":           "Email",
-		"AGENT_TYPE_SMS":             "SMS",
-		"AGENT_TYPE_PUSH":            "Push-уведомления",
-		"AGENT_TYPE_VOICE":           "Голос",
-		"AGENT_TYPE_VIDEO":           "Видео",
-		"AGENT_TYPE_IMAGE":           "Изображение",
-		"AGENT_TYPE_DOCUMENT":        "Документ",
-		"AGENT_TYPE_SPREADSHEET":     "Таблица",
-		"AGENT_TYPE_PRESENTATION":    "Презентация",
-		"AGENT_TYPE_PDF":             "PDF",
-		"AGENT_TYPE_XML":             "XML",
-		"AGENT_TYPE_JSON":            "JSON",
-		"AGENT_TYPE_CSV":             "CSV",
-		"AGENT_TYPE_EXCEL":           "Excel",
-		"AGENT_TYPE_WORD":            "Word",
-		"AGENT_TYPE_POWERPOINT":      "PowerPoint",
-		"AGENT_TYPE_UNKNOWN":         "Неизвестно",
-		"AGENT_TYPE_OTHER":           "Другое",
-		// Обратная совместимость
-		"CHAT":            "Чат-бот",
-		"ASSISTANT":       "Ассистент",
-		"WORKER":          "Работник",
-		"ANALYZER":        "Анализатор",
-		"GENERATOR":       "Генератор",
-		"CLASSIFIER":      "Классификатор",
-		"TRANSLATOR":      "Переводчик",
-		"SUMMARIZER":      "Суммаризатор",
-		"EXTRACTOR":       "Извлекатель",
-		"VALIDATOR":       "Валидатор",
-		"OPTIMIZER":       "Оптимизатор",
-		"MONITOR":         "Монитор",
-		"SCHEDULER":       "Планировщик",
-		"ROUTER":          "Маршрутизатор",
-		"AGGREGATOR":      "Агрегатор",
-		"FILTER":          "Фильтр",
-		"TRANSFORMER":     "Трансформер",
-		"ENRICHER":        "Обогатитель",
-		"NOTIFIER":        "Уведомитель",
-		"ARCHIVER":        "Архиватор",
-		"BACKUP":          "Резервное копирование",
-		"SYNC":            "Синхронизатор",
-		"MIGRATOR":        "Мигратор",
-		"CLEANER":         "Очиститель",
-		"SECURITY":        "Безопасность",
-		"AUDIT":           "Аудит",
-		"COMPLIANCE":      "Соответствие",
-		"REPORTING":       "Отчетность",
-		"ANALYTICS":       "Аналитика",
-		"PREDICTION":      "Прогнозирование",
-		"RECOMMENDATION":  "Рекомендации",
-		"PERSONALIZATION": "Персонализация",
-		"AUTOMATION":      "Автоматизация",
-		"INTEGRATION":     "Интеграция",
-		"API":             "API",
-		"WEBHOOK":         "Webhook",
-		"QUEUE":           "Очередь",
-		"CACHE":           "Кэш",
-		"DATABASE":        "База данных",
-		"FILE":            "Файл",
-		"EMAIL":           "Email",
-		"SMS":             "SMS",
-		"PUSH":            "Push-уведомления",
-		"VOICE":           "Голос",
-		"VIDEO":           "Видео",
-		"IMAGE":           "Изображение",
-		"DOCUMENT":        "Документ",
-		"SPREADSHEET":     "Таблица",
-		"PRESENTATION":    "Презентация",
-		"PDF":             "PDF",
-		"XML":             "XML",
-		"JSON":            "JSON",
-		"CSV":             "CSV",
-		"EXCEL":           "Excel",
-		"WORD":            "Word",
-		"POWERPOINT":      "PowerPoint",
-		"UNKNOWN":         "Неизвестно",
-		"OTHER":           "Другое",
-	}
-
-	if translation, exists := typeTranslations[strings.ToUpper(agentType)]; exists {
-		return translation
-	}
-
-	// Если тип не найден в переводах, возвращаем оригинальное значение
-	return agentType
-}
-
 // FormatUserName форматирует имя пользователя для отображения
 func FormatUserName(userID, firstName, lastName, email string) string {
 	if firstName != "" && lastName != "" {
@@ -989,7 +909,7 @@ func NewServerPaginatedTableModel(ctx context.Context, title string, columns []t
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithFocused(true),
-		table.WithHeight(20),
+		table.WithHeight(10), // Уменьшаем высоту по умолчанию
 	)
 
 	model := &ServerPaginatedTableModel{
@@ -1025,6 +945,17 @@ func (m *ServerPaginatedTableModel) loadPage(page int) {
 
 	m.total = total
 	m.pages = (total + m.limit - 1) / m.limit
+
+	// Устанавливаем высоту таблицы в зависимости от количества строк
+	// Минимум 3 строки, максимум 20
+	height := len(rows)
+	if height < 3 {
+		height = 3
+	} else if height > 20 {
+		height = 20
+	}
+	m.table.SetHeight(height)
+
 	m.table.SetRows(rows)
 	m.loading = false
 }
@@ -1032,7 +963,7 @@ func (m *ServerPaginatedTableModel) loadPage(page int) {
 // View отображает таблицу
 func (m *ServerPaginatedTableModel) View() string {
 	if m.loading {
-		return fmt.Sprintf("%s\n\nЗагрузка...", m.title)
+		return fmt.Sprintf("%s\n\n%s", m.title, ShowLoadingMessage("Загрузка данных..."))
 	}
 
 	title := fmt.Sprintf("%s (страница %d из %d, всего: %d)", m.title, m.page, m.pages, m.total)
