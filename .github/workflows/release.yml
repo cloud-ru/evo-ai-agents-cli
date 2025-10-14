@@ -14,12 +14,12 @@ jobs:
       
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version: '1.24.3'
         cache: true
@@ -125,7 +125,7 @@ jobs:
         EOF
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         name: AI Agents CLI ${{ steps.version.outputs.VERSION }}
         body_path: release_notes.md
