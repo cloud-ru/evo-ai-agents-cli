@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/api"
-	"github.com/cloudru/ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/api"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -73,4 +73,3 @@ func init() {
 	updateCmd.Flags().StringSliceVarP(&systemUpdateAgents, "agents", "a", []string{}, "Новый список ID агентов для системы")
 	updateCmd.Flags().StringVarP(&systemUpdateOptions, "options", "o", "", "Новые опции системы в формате JSON")
 }
-

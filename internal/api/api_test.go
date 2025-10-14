@@ -2,13 +2,14 @@ package api
 
 import (
 	"testing"
-	"github.com/cloudru/ai-agents-cli/internal/auth"
+
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/auth"
 )
 
 func TestNewAPI(t *testing.T) {
 	// Создаем мок IAM сервис
 	authService := auth.NewIAMAuthService("test-key-id", "test-secret", "https://iam.test.com")
-	
+
 	api := NewAPI("https://api.test.com", "test-project", authService)
 
 	if api.Client == nil {

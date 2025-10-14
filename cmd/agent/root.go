@@ -2,7 +2,7 @@ package agent
 
 import (
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -53,7 +53,7 @@ func init() {
 
 	// Добавляем подкоманды
 	RootCMD.AddCommand(listCmd)
-	RootCMD.AddCommand(getCmd)
-	RootCMD.AddCommand(marketplaceCmd)
 	RootCMD.AddCommand(deployCmd)
+	// RootCMD.AddCommand(getCmd)
+	// RootCMD.AddCommand(marketplaceCmd)
 }

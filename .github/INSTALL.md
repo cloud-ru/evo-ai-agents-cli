@@ -144,7 +144,7 @@ brew upgrade ai-agents-cli
 
 ### Ручное обновление
 
-1. Скачайте новую версию с [GitHub Releases](https://github.com/cloudru/ai-agents-cli/releases)
+1. Скачайте новую версию с [GitHub Releases](https://github.com/cloud-ru/evo-ai-agents-cli/releases)
 2. Замените старый бинарный файл новым
 3. Перезапустите терминал
 

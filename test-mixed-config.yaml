@@ -1,0 +1,62 @@
+# Mixed Configuration - All Entity Types
+# This file demonstrates unified deployment
+
+# MCP Servers Section
+mcp-servers:
+  - name: "database-mcp"
+    description: "Database operations MCP server"
+    options:
+      host: "localhost"
+      port: 5432
+      database: "production"
+      
+  - name: "api-mcp"
+    description: "External API integration MCP server"
+    options:
+      base_url: "https://api.example.com"
+      api_key: "${API_KEY}"
+
+# Agents Section
+agents:
+  - name: "chat-agent"
+    description: "Customer support chat agent"
+    options:
+      systemPrompt: "You are a helpful customer support agent."
+      scaling:
+        minScale: 0
+        maxScale: 3
+    llm_options:
+      provider: "openai"
+      model: "gpt-4"
+      temperature: 0.7
+    mcp_servers:
+      - "database-mcp"
+      - "api-mcp"
+      
+  - name: "analytics-agent"
+    description: "Data analysis and reporting agent"
+    options:
+      systemPrompt: "You are an expert data analyst."
+      scaling:
+        minScale: 1
+        maxScale: 2
+    llm_options:
+      provider: "anthropic"
+      model: "claude-3-sonnet"
+      temperature: 0.3
+    mcp_servers:
+      - "database-mcp"
+
+# Agent Systems Section
+agent-systems:
+  - name: "support-system"
+    description: "Complete customer support system"
+    agents:
+      - "chat-agent"
+      - "analytics-agent"
+    options:
+      coordination:
+        strategy: "sequential"
+        timeout: 300
+      monitoring:
+        enabled: true

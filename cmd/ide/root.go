@@ -1,7 +1,7 @@
 package ide
 
 import (
-	"github.com/cloudru/ai-agents-cli/localizations"
+	"github.com/cloud-ru/evo-ai-agents-cli/localizations"
 
 	"github.com/spf13/cobra"
 )

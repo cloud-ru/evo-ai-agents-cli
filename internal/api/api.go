@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/cloudru/ai-agents-cli/internal/auth"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/auth"
 )
 
 // API представляет основной API клиент со всеми сервисами

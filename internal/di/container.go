@@ -1,9 +1,9 @@
 package di
 
 import (
-	"github.com/cloudru/ai-agents-cli/internal/api"
-	"github.com/cloudru/ai-agents-cli/internal/auth"
-	"github.com/cloudru/ai-agents-cli/internal/config"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/api"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/auth"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/config"
 	"github.com/samber/do/v2"
 )
 

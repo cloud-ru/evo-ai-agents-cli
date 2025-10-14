@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/di"
-	"github.com/cloudru/ai-agents-cli/internal/ui"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -55,4 +55,3 @@ func init() {
 	listCmd.Flags().IntVarP(&systemLimit, "limit", "l", 20, "Количество систем на странице")
 	listCmd.Flags().IntVarP(&systemOffset, "offset", "", 0, "Смещение для пагинации")
 }
-

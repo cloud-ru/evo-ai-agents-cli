@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
-	"github.com/cloudru/ai-agents-cli/internal/auth"
-)
 
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/auth"
+)
 
 func TestNewClient(t *testing.T) {
 	authService := auth.NewIAMAuthService("test-key-id", "test-secret", "https://iam.test.com")
@@ -342,9 +342,9 @@ func TestClient_Timeout(t *testing.T) {
 
 // Вспомогательная функция для проверки содержания строки
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && s[:len(substr)] == substr || 
-		   len(s) > len(substr) && s[len(s)-len(substr):] == substr ||
-		   len(s) >= len(substr) && containsSubstring(s, substr)
+	return len(s) >= len(substr) && s[:len(substr)] == substr ||
+		len(s) > len(substr) && s[len(s)-len(substr):] == substr ||
+		len(s) >= len(substr) && containsSubstring(s, substr)
 }
 
 func containsSubstring(s, substr string) bool {

@@ -4,7 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"github.com/cloudru/ai-agents-cli/internal/validator"
+
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/validator"
 )
 
 func init() {
@@ -76,10 +77,10 @@ func TestFindConfigFiles_Integration(t *testing.T) {
 
 	// Создаем файлы различных типов
 	files := map[string]string{
-		"config.yaml":     "yaml content",
-		"config.yml":      "yml content",
-		"config.json":     "json content",
-		"other.txt":       "text content",
+		"config.yaml":      "yaml content",
+		"config.yml":       "yml content",
+		"config.json":      "json content",
+		"other.txt":        "text content",
 		"subdir/test.yaml": "subdir yaml content",
 		"subdir/test.yml":  "subdir yml content",
 	}
@@ -161,34 +162,34 @@ func TestValidateCommand_EdgeCases(t *testing.T) {
 		expectValid bool
 	}{
 		{
-			name: "empty file",
-			content: "",
-			filename: "empty.yaml",
+			name:        "empty file",
+			content:     "",
+			filename:    "empty.yaml",
 			expectValid: false,
 		},
 		{
-			name: "invalid yaml syntax",
-			content: "invalid: yaml: [",
-			filename: "invalid.yaml",
+			name:        "invalid yaml syntax",
+			content:     "invalid: yaml: [",
+			filename:    "invalid.yaml",
 			expectValid: false,
 		},
 		{
-			name: "valid json",
-			content: `{"agents": [{"name": "test", "llm_options": {"provider": "openai"}}]}`,
-			filename: "valid.json",
+			name:        "valid json",
+			content:     `{"agents": [{"name": "test", "llm_options": {"provider": "openai"}}]}`,
+			filename:    "valid.json",
 			expectValid: true,
 		},
 		{
-			name: "invalid json",
-			content: `{"agents": [{"name": "test"}]}`,
-			filename: "invalid.json",
+			name:        "invalid json",
+			content:     `{"agents": [{"name": "test"}]}`,
+			filename:    "invalid.json",
 			expectValid: false,
 		},
 		{
 			name: "file with only comments",
 			content: `# This is a comment
 # Another comment`,
-			filename: "comments.yaml",
+			filename:    "comments.yaml",
 			expectValid: false,
 		},
 	}

@@ -5,22 +5,12 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/cmd"
-	"github.com/cloudru/ai-agents-cli/internal/config"
-	"github.com/cloudru/ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/cmd"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
 )
 
 func main() {
 	ctx := context.Background()
-
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	shutdown := initTracing(ctx, cfg)
-	defer shutdown()
 
 	// Инициализируем DI контейнер
 	log.Debug("Инициализация DI контейнера")

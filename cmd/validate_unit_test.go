@@ -4,7 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"github.com/cloudru/ai-agents-cli/internal/validator"
+
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/validator"
 )
 
 func init() {
@@ -166,5 +167,3 @@ func TestValidateCommand_Unit(t *testing.T) {
 		t.Errorf("Expected validation errors for invalid file")
 	}
 }
-
-

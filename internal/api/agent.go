@@ -116,24 +116,6 @@ type AgentSystemPreview struct {
 	Name string `json:"name"`
 }
 
-// AgentCreateRequest представляет запрос на создание агента
-type AgentCreateRequest struct {
-	Name        string                 `json:"name"`
-	Description string                 `json:"description,omitempty"`
-	Options     map[string]interface{} `json:"options"`
-	LLMOptions  map[string]interface{} `json:"llm_options"`
-	MCPs        []string               `json:"mcp_servers,omitempty"`
-}
-
-// AgentUpdateRequest представляет запрос на обновление агента
-type AgentUpdateRequest struct {
-	Name        string                 `json:"name,omitempty"`
-	Description string                 `json:"description,omitempty"`
-	Options     map[string]interface{} `json:"options,omitempty"`
-	LLMOptions  map[string]interface{} `json:"llm_options,omitempty"`
-	MCPs        []string               `json:"mcp_servers,omitempty"`
-}
-
 // AgentListResponse представляет ответ со списком агентов
 type AgentListResponse struct {
 	Data  []Agent `json:"data"`
@@ -231,11 +213,35 @@ func (s *AgentService) Get(ctx context.Context, agentID string) (*Agent, error) 
 	return &agent, nil
 }
 
+// AgentCreateRequest представляет запрос на создание агента
+type AgentCreateRequest struct {
+	Name               string                 `json:"name"`
+	Description        string                 `json:"description,omitempty"`
+	InstanceTypeID     string                 `json:"instance_type_id,omitempty"`
+	ExportedPorts      []int                  `json:"exported_ports,omitempty"`
+	ImageSource        map[string]interface{} `json:"image_source,omitempty"`
+	Options            map[string]interface{} `json:"options,omitempty"`
+	MCPServers         []string               `json:"mcp_servers,omitempty"`
+	IntegrationOptions map[string]interface{} `json:"integration_options,omitempty"`
+}
+
 // Create создает нового агента
 func (s *AgentService) Create(ctx context.Context, req *AgentCreateRequest) (*Agent, error) {
 	var result Agent
 	err := s.client.Post(ctx, fmt.Sprintf("/api/v1/%s/agents", s.client.projectID), req, &result)
 	return &result, err
+}
+
+// AgentUpdateRequest представляет запрос на обновление агента
+type AgentUpdateRequest struct {
+	Name               string                 `json:"name,omitempty"`
+	Description        string                 `json:"description,omitempty"`
+	InstanceTypeID     string                 `json:"instance_type_id,omitempty"`
+	ExportedPorts      []int                  `json:"exported_ports,omitempty"`
+	ImageSource        map[string]interface{} `json:"image_source,omitempty"`
+	Options            map[string]interface{} `json:"options,omitempty"`
+	MCPServerID        string                 `json:"mcp_server_id,omitempty"`
+	IntegrationOptions map[string]interface{} `json:"integration_options,omitempty"`
 }
 
 // Update обновляет существующего агента

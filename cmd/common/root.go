@@ -1,8 +1,6 @@
 package common
 
 import (
-	"github.com/cloudru/ai-agents-cli/localizations"
-
 	"github.com/spf13/cobra"
 )
 
@@ -13,10 +11,10 @@ var (
 // RootCMD represents the base command when called without any subcommands
 var RootCMD = &cobra.Command{
 	Use:   "common",
-	Short: localizations.Localization.Get("root_short"),
-	Long:  localizations.Localization.Get("root_long"),
+	Short: "Общие функции",
+	Long:  "Общие функции и утилиты CLI",
 	Run: func(cmd *cobra.Command, args []string) {
-
+		cmd.Help()
 	},
 	Args: cobra.ArbitraryArgs,
 }

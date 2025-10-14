@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"github.com/cloudru/ai-agents-cli/cmd/agent"
-	"github.com/cloudru/ai-agents-cli/cmd/ci"
-	"github.com/cloudru/ai-agents-cli/cmd/common"
-	"github.com/cloudru/ai-agents-cli/cmd/mcp_server"
-	"github.com/cloudru/ai-agents-cli/cmd/prompt"
-	"github.com/cloudru/ai-agents-cli/cmd/system"
-	"github.com/cloudru/ai-agents-cli/cmd/trigger"
+	"github.com/cloud-ru/evo-ai-agents-cli/cmd/agent"
+	"github.com/cloud-ru/evo-ai-agents-cli/cmd/ci"
+	"github.com/cloud-ru/evo-ai-agents-cli/cmd/common"
+	"github.com/cloud-ru/evo-ai-agents-cli/cmd/mcp_server"
+	"github.com/cloud-ru/evo-ai-agents-cli/cmd/prompt"
+	"github.com/cloud-ru/evo-ai-agents-cli/cmd/system"
+	"github.com/cloud-ru/evo-ai-agents-cli/cmd/trigger"
 )
 
 func init() {

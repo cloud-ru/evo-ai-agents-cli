@@ -10,8 +10,20 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/auth"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/auth"
 )
+
+// AuthenticationError представляет ошибку аутентификации
+type AuthenticationError struct {
+	StatusCode int
+	Message    string
+	Details    string
+}
+
+// Error возвращает строковое представление ошибки
+func (e *AuthenticationError) Error() string {
+	return fmt.Sprintf("%s (статус %d): %s", e.Message, e.StatusCode, e.Details)
+}
 
 // Client представляет HTTP клиент для работы с AI Agents API
 type Client struct {
@@ -118,6 +130,15 @@ func (c *Client) parseResponse(resp *http.Response, target interface{}) error {
 
 	if resp.StatusCode >= 400 {
 		log.Error("API error response", "status", resp.StatusCode, "body", string(body))
+
+		// Проверяем на ошибки аутентификации
+		if resp.StatusCode == 401 || resp.StatusCode == 403 {
+			return &AuthenticationError{
+				StatusCode: resp.StatusCode,
+				Message:    "Ошибка аутентификации",
+				Details:    "Проверьте настройки аутентификации и попробуйте снова",
+			}
+		}
 
 		var errorResp struct {
 			Error struct {

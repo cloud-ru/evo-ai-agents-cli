@@ -1,0 +1,23 @@
+# AI Agents Configuration
+# This file will be used by default when running: ai-agents-cli deploy
+
+mcp-servers:
+  - name: "database-mcp"
+    description: "Database operations MCP server"
+    options:
+      host: "localhost"
+      port: 5432
+
+agents:
+  - name: "chat-agent"
+    description: "Customer support chat agent"
+    options:
+      systemPrompt: "You are a helpful customer support agent."
+    mcp_servers:
+      - "database-mcp"
+
+agent-systems:
+  - name: "support-system"
+    description: "Complete customer support system"
+    agents:
+      - "chat-agent"

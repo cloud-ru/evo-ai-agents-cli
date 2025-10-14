@@ -1,84 +1,86 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "A list of files that will be merged in one file",
+  "title": "JSON Schema for Agents YAML deployment configuration",
+  "description": "Deploy AI Agents with YAML configuration",
+  "type": "object",
   "additionalProperties": false,
-  "type": "array",
-  "items": {
-    "type": "object",
-    "properties": {
-      "name": {
-        "type": "string",
-        "description": "Unique name of agent in project",
-        "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
-      },
-      "description" : {
-        "type": "string",
-        "description": "Description for your agent",
-        "maxLength": 255
-      },
-      "model": {
-        "type": "string",
-        "description": "Reference on model by name described in [models] section"
-      },
-      "prompt" : {
-        "type": "string",
-        "description": "Reference on prompt by name described in [prompts] section",
-        "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
-      },
-      "source": {
-        "anyOf": [
-          {
-            "simple": {
-              "type": "object",
-              "maxProperties": 0
+  "properties": {
+    "agents": {
+      "description": "List of agents to deploy",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique name of agent in project",
+            "minLength": 3,
+            "maxLength": 125
+          },
+          "description": {
+            "type": "string",
+            "description": "Description for your agent",
+            "minLength": 3,
+            "maxLength": 500
+          },
+          "options": {
+            "type": "object",
+            "description": "Configuration options for the agent",
+            "additionalProperties": true
+          },
+          "llm_options": {
+            "type": "object",
+            "description": "LLM configuration options",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "description": "LLM provider (openai, anthropic, etc.)"
+              },
+              "model": {
+                "type": "string",
+                "description": "Model name"
+              },
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2
+              },
+              "max_tokens": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "api_key": {
+                "type": "string",
+                "description": "API key for the provider"
+              }
+            },
+            "additionalProperties": true
+          },
+          "mcp_servers": {
+            "type": "array",
+            "description": "List of MCP server names to attach",
+            "items": {
+              "type": "string",
+              "description": "Name of MCP server"
             }
           },
-          {
-            "artifact_registry": {
-              "type": "object",
-              "description": "",
-              "properties": {
-                "image":{
-                  "type": "string",
-                  "description": "",
-                  "pattern": "(\\w+).cr.cloud.ru/.*"
-                }
-              },
-              "required": ["image"],
-              "minProperties": 1,
-              "maxProperties": 1
-            }
-          },
-          {
-            "marketplace": {
-              "type": "object",
-              "description": "",
-              "properties": {
-                "name" : {
-                  "type": "string",
-                  "description": "Reference on prompt by name described in [prompts] section",
-                  "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
-                }
-              },
-              "required": ["name"],
-              "minProperties": 1,
-              "maxProperties": 1
-            }
+          "!include": {
+            "type": "string",
+            "description": "Path to file to include",
+            "pattern": "^(\\.[/\\\\])?[^/\\\\].*$"
           }
-        ],
-        "description": ""
+        },
+        "required": ["name"],
+        "additionalProperties": true
       },
-      "mcp-servers": {
-        "type": "array",
-        "description": "Reference on model by name described in [models] section",
-        "items": {
-          "type": "string",
-          "description": "Unique name of mcp-server in project",
-          "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
-        }
-      }
+      "minItems": 1,
+      "uniqueItems": true
     },
-    "required": ["name", "source", "options", "llm", "mcp-servers"],
-    "uniqueItems": true
-  }
+    "!include": {
+      "type": "string",
+      "description": "Path to file to include",
+      "pattern": "^(\\.[/\\\\])?[^/\\\\].*$"
+    }
+  },
+  "additionalProperties": true
 }

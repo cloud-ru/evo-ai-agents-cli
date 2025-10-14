@@ -25,7 +25,7 @@ jobs:
 
       - name: Download AI Agents CLI
         run: |
-          wget -O ai-agents-cli https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+          wget -O ai-agents-cli https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
           chmod +x ai-agents-cli
 
       - name: Validate MCP Servers
@@ -58,7 +58,7 @@ jobs:
 
       - name: Download AI Agents CLI
         run: |
-          wget -O ai-agents-cli https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+          wget -O ai-agents-cli https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
           chmod +x ai-agents-cli
 
       - name: Deploy MCP Servers (Dry Run)
@@ -106,7 +106,7 @@ jobs:
 
       - name: Download AI Agents CLI
         run: |
-          wget -O ai-agents-cli https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+          wget -O ai-agents-cli https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
           chmod +x ai-agents-cli
 
       - name: Deploy MCP Servers (Dry Run)
@@ -167,7 +167,7 @@ jobs:
 
       - name: Download AI Agents CLI
         run: |
-          wget -O ai-agents-cli https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+          wget -O ai-agents-cli https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
           chmod +x ai-agents-cli
 
       - name: Rollback to Previous Version

@@ -7,7 +7,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/validator"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/validator"
 	"github.com/spf13/cobra"
 )
 
@@ -38,10 +38,10 @@ var validateCmd = &cobra.Command{
   ai-agents-cli validate examples/agents.yaml
   ai-agents-cli validate examples/
   ai-agents-cli validate --file config.yaml`,
-	Args:  cobra.MaximumNArgs(1),
+	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Info("Запуск валидации конфигурационных файлов")
-		
+
 		// Создаем валидатор
 		configValidator := validator.NewConfigValidator()
 		log.Debug("Валидатор создан")

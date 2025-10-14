@@ -1,8 +1,8 @@
 package mcp_server
 
 import (
-	"github.com/cloudru/ai-agents-cli/localizations"
-	"github.com/cloudru/ai-agents-cli/localizations/i18n_labels"
+	"github.com/cloud-ru/evo-ai-agents-cli/localizations"
+	"github.com/cloud-ru/evo-ai-agents-cli/localizations/i18n_labels"
 
 	"github.com/spf13/cobra"
 )

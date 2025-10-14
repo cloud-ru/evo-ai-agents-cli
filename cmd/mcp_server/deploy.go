@@ -2,24 +2,21 @@ package mcp_server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path/filepath"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/api"
-	"github.com/cloudru/ai-agents-cli/internal/di"
-	"github.com/cloudru/ai-agents-cli/localizations"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/deployer"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
+	"github.com/cloud-ru/evo-ai-agents-cli/localizations"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 var (
-	deployFile string
-	dryRun     bool
+	deployFile   string
+	dryRun       bool
+	validateOnly bool
 )
 
 // deployCmd represents the deploy command
@@ -42,7 +39,6 @@ var deployCmd = &cobra.Command{
 			defaultFiles := []string{
 				"mcp-servers.yaml",
 				"mcp-servers.yml",
-				"mcp-servers.json",
 			}
 
 			for _, file := range defaultFiles {
@@ -57,108 +53,38 @@ var deployCmd = &cobra.Command{
 			}
 		}
 
-		// Читаем файл конфигурации
-		data, err := ioutil.ReadFile(configFile)
-		if err != nil {
-			log.Fatal("Failed to read config file", "error", err, "file", configFile)
-		}
-
-		// Парсим конфигурацию
-		var config struct {
-			MCPServers []struct {
-				Name        string                 `json:"name" yaml:"name"`
-				Description string                 `json:"description" yaml:"description"`
-				Options     map[string]interface{} `json:"options" yaml:"options"`
-			} `json:"mcp-servers" yaml:"mcp-servers"`
-		}
-
-		ext := filepath.Ext(configFile)
-		switch ext {
-		case ".json":
-			err = json.Unmarshal(data, &config)
-		case ".yaml", ".yml":
-			err = yaml.Unmarshal(data, &config)
-		default:
-			log.Fatal("Unsupported file format", "extension", ext)
-		}
-
-		if err != nil {
-			log.Fatal("Failed to parse config file", "error", err)
-		}
-
-		if len(config.MCPServers) == 0 {
-			log.Fatal("No MCP servers found in configuration")
-		}
-
-		// Создаем стили для вывода
-		headerStyle := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("205")).
-			Border(lipgloss.RoundedBorder()).
-			Padding(0, 1)
-
-		successStyle := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("2"))
-
-		errorStyle := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("1"))
-
-		// Выводим заголовок
-		fmt.Println(headerStyle.Render("🚀 Развертывание MCP серверов"))
-		fmt.Printf("Файл конфигурации: %s\n", configFile)
-		fmt.Printf("Количество серверов: %d\n", len(config.MCPServers))
-		if dryRun {
-			fmt.Println("🔍 Режим предварительного просмотра (dry-run)")
-		}
-		fmt.Println()
-
-		// Развертываем каждый сервер
-		successCount := 0
-		errorCount := 0
-
-		for i, serverConfig := range config.MCPServers {
-			fmt.Printf("[%d/%d] ", i+1, len(config.MCPServers))
-
-			if dryRun {
-				fmt.Printf("🔍 %s (dry-run)\n", serverConfig.Name)
-				continue
-			}
-
-			// Создаем MCP сервер
-			req := &api.MCPServerCreateRequest{
-				Name:        serverConfig.Name,
-				Description: serverConfig.Description,
-				Options:     serverConfig.Options,
-			}
-
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
 		apiClient := container.GetAPI()
 
-					server, err := apiClient.MCPServers.Create(ctx, req)
-			if err != nil {
-				fmt.Printf("%s %s: %v\n", errorStyle.Render("❌"), serverConfig.Name, err)
-				errorCount++
-				continue
-			}
+		// Создаем деплойер
+		mcpDeployer := deployer.NewMCPDeployer(apiClient)
 
-			fmt.Printf("%s %s (ID: %s)\n", successStyle.Render("✅"), serverConfig.Name, server.ID[:8]+"...")
-			successCount++
+		// Валидация конфигурации
+		fmt.Println(ui.FormatInfo("Validating configuration..."))
+		if err := mcpDeployer.ValidateMCPServers(configFile); err != nil {
+			log.Error("Configuration validation failed", "error", err)
+			fmt.Println(ui.CheckAndDisplayError(err))
+			return
+		}
+		fmt.Println(ui.FormatSuccess("Configuration is valid"))
+
+		if validateOnly {
+			fmt.Println(ui.FormatInfo("Validation completed successfully"))
+			return
 		}
 
-		// Выводим итоги
-		fmt.Println()
-		if dryRun {
-			fmt.Println(headerStyle.Render("🔍 Предварительный просмотр завершен"))
-		} else {
-			fmt.Println(headerStyle.Render("🎉 Развертывание завершено"))
-			fmt.Printf("Успешно: %d\n", successCount)
-			if errorCount > 0 {
-				fmt.Printf("Ошибок: %d\n", errorCount)
-			}
+		// Развертывание
+		fmt.Println(ui.FormatInfo("Starting deployment..."))
+		results, err := mcpDeployer.DeployMCPServers(ctx, configFile, dryRun)
+		if err != nil {
+			log.Error("Deployment failed", "error", err)
+			fmt.Println(ui.CheckAndDisplayError(err))
+			return
 		}
+
+		// Показываем результаты
+		deployer.ShowDeployResults(results)
 	},
 }
 
@@ -167,4 +93,5 @@ func init() {
 
 	deployCmd.Flags().StringVarP(&deployFile, "file", "f", "", "Путь к файлу конфигурации")
 	deployCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "Режим предварительного просмотра без создания ресурсов")
+	deployCmd.Flags().BoolVar(&validateOnly, "validate-only", false, "Только валидация конфигурации без развертывания")
 }

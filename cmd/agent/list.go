@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/ui"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
 	"github.com/spf13/cobra"
 )
 
 var (
-	agentLimit  int
-	agentOffset int
+	listLimit  int
+	listOffset int
 )
 
 // listCmd represents the list command
@@ -23,7 +23,9 @@ var listCmd = &cobra.Command{
 Команда отображает таблицу с информацией о всех агентах:
 • ID агента
 • Название агента
+• Описание агента
 • Текущий статус
+• Тип агента
 • Дата создания
 • Дата последнего обновления
 
@@ -36,24 +38,16 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
-		// Проверяем размер терминала
-		if err := ui.CheckTerminalSize(); err != nil {
-			log.Error("Ошибка размера терминала", "error", err)
-			fmt.Println("❌", err)
-			return
-		}
-
 		// Показываем таблицу агентов
-		if err := ui.ShowAgentsListFromAPI(ctx, agentLimit, agentOffset); err != nil {
+		if err := ui.ShowAgentsListFromAPI(ctx, listLimit, listOffset); err != nil {
 			log.Error("Ошибка отображения таблицы агентов", "error", err)
-			log.Fatal("Failed to show agents table", "error", err)
+			fmt.Println(ui.CheckAndDisplayError(err))
+			return
 		}
 	},
 }
 
 func init() {
-	RootCMD.AddCommand(listCmd)
-
-	listCmd.Flags().IntVarP(&agentLimit, "limit", "l", 20, "Количество записей для отображения")
-	listCmd.Flags().IntVarP(&agentOffset, "offset", "o", 0, "Смещение для постраничной навигации")
+	listCmd.Flags().IntVarP(&listLimit, "limit", "l", 20, "Количество записей для отображения")
+	listCmd.Flags().IntVarP(&listOffset, "offset", "o", 0, "Смещение для постраничной навигации")
 }

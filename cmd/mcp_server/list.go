@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/ui"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -46,7 +46,8 @@ var listCmd = &cobra.Command{
 		// Показываем таблицу MCP серверов
 		if err := ui.ShowMCPServersListFromAPI(ctx, limit, offset); err != nil {
 			log.Error("Ошибка отображения таблицы MCP серверов", "error", err)
-			log.Fatal("Failed to show MCP servers table", "error", err)
+			fmt.Println(ui.CheckAndDisplayError(err))
+			return
 		}
 	},
 }

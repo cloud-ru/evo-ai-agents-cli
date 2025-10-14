@@ -11,7 +11,7 @@ variables:
 
 before_script:
   - apt-get update -qq && apt-get install -y -qq wget
-  - wget -O $CLI_BINARY https://github.com/cloudru/ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
+  - wget -O $CLI_BINARY https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v$CLI_VERSION/ai-agents-cli-linux-amd64
   - chmod +x $CLI_BINARY
 
 validate:

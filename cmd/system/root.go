@@ -41,5 +41,14 @@ var RootCMD = &cobra.Command{
 }
 
 func init() {
-
+	// Добавляем подкоманды
+	RootCMD.AddCommand(deployCmd)
+	// TODO: Добавить остальные команды по мере реализации
+	// RootCMD.AddCommand(listCmd)
+	// RootCMD.AddCommand(getCmd)
+	// RootCMD.AddCommand(createCmd)
+	// RootCMD.AddCommand(updateCmd)
+	// RootCMD.AddCommand(deleteCmd)
+	// RootCMD.AddCommand(resumeCmd)
+	// RootCMD.AddCommand(suspendCmd)
 }

@@ -1,11 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "array",
-  "additionalProperties": false,
-  "items": {
-    "type": "string",
-    "format": "uri-reference"
+  "type": "object",
+  "title": "Include Directive Schema",
+  "description": "Schema for YAML include directives",
+  "properties": {
+    "!include": {
+      "type": "string",
+      "description": "Path to file to include",
+      "pattern": "^(\\.[/\\\\])?[^/\\\\].*$"
+    }
   },
-  "minItems": 1,
-  "uniqueItems": true
+  "additionalProperties": true,
+  "required": ["!include"]
 }

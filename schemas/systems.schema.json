@@ -1,40 +1,59 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "JSON Schema for AI Agents YAML deployment configuration",
-  "description": "Deploy AI Agent Systems with yaml",
-  "type": "array",
+  "title": "JSON Schema for Agent Systems YAML deployment configuration",
+  "description": "Deploy AI Agent Systems with YAML configuration",
+  "type": "object",
   "additionalProperties": false,
-  "items": {
-    "properties": {
-      "name": {
-        "type": "string",
-        "description": "Unique name of agent in project",
-        "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
-      },
-      "description" : {
-        "type": "string",
-        "description": "Description for your agent",
-        "maxLength": 255
-      },
-      "model": {
-        "type": "string",
-        "description": "Reference on model by name described in [models] section"
-      },
-      "agents" : {
-        "type": "array",
-        "description": "",
-        "items": {
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "Unique name of agent in project",
-              "pattern": "^[a-z][a-z0-9-]{3,48}[a-z0-9]$"
-            }
+  "properties": {
+    "agent-systems": {
+      "description": "List of agent systems to deploy",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique name of agent system in project",
+            "minLength": 3,
+            "maxLength": 125
           },
-          "minItems": 1
-        }
-      }
+          "description": {
+            "type": "string",
+            "description": "Description for your agent system",
+            "minLength": 3,
+            "maxLength": 500
+          },
+          "agents": {
+            "type": "array",
+            "description": "List of agent names in this system",
+            "items": {
+              "type": "string",
+              "description": "Name of agent to include in system"
+            },
+            "minItems": 1
+          },
+          "options": {
+            "type": "object",
+            "description": "Configuration options for the agent system",
+            "additionalProperties": true
+          },
+          "!include": {
+            "type": "string",
+            "description": "Path to file to include",
+            "pattern": "^(\\.[/\\\\])?[^/\\\\].*$"
+          }
+        },
+        "required": ["name", "agents"],
+        "additionalProperties": true
+      },
+      "minItems": 1,
+      "uniqueItems": true
     },
-    "required": ["name", "model", "agents"]
-  }
+    "!include": {
+      "type": "string",
+      "description": "Path to file to include",
+      "pattern": "^(\\.[/\\\\])?[^/\\\\].*$"
+    }
+  },
+  "additionalProperties": true
 }
