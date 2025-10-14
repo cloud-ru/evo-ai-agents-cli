@@ -8,6 +8,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,10 @@ var getCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		serverID := args[0]
+
+		// Получаем API клиент из DI контейнера
+		container := di.GetContainer()
+		apiClient := container.GetAPI()
 
 		// Получаем информацию о MCP сервере
 		server, err := apiClient.MCPServers.Get(ctx, serverID)
@@ -85,8 +90,13 @@ var getCmd = &cobra.Command{
 		fmt.Printf("%s: %s\n", labelStyle.Render("Статус"), status)
 
 		// Даты
-		fmt.Printf("%s: %s\n", labelStyle.Render("Создан"), valueStyle.Render(server.CreatedAt.Format("02.01.2006 15:04:05")))
-		fmt.Printf("%s: %s\n", labelStyle.Render("Обновлен"), valueStyle.Render(server.UpdatedAt.Format("02.01.2006 15:04:05")))
+		fmt.Printf("%s: %s\n", labelStyle.Render("Создан"), valueStyle.Render(server.CreatedAt.Time.Format("02.01.2006 15:04:05")))
+		fmt.Printf("%s: %s\n", labelStyle.Render("Обновлен"), valueStyle.Render(server.UpdatedAt.Time.Format("02.01.2006 15:04:05")))
+
+		// Статистика
+		fmt.Println()
+		fmt.Println(labelStyle.Render("📊 Статистика:"))
+		fmt.Printf("  %s: %s\n", labelStyle.Render("Опций"), valueStyle.Render(fmt.Sprintf("%d", len(server.Options))))
 
 		// Опции
 		if len(server.Options) > 0 {
@@ -94,8 +104,14 @@ var getCmd = &cobra.Command{
 			fmt.Println(labelStyle.Render("⚙️  Опции:"))
 			for key, value := range server.Options {
 				valueStr := fmt.Sprintf("%v", value)
+				if len(valueStr) > 60 {
+					valueStr = valueStr[:60] + "..."
+				}
 				fmt.Printf("  %s: %s\n", labelStyle.Render(key), valueStyle.Render(valueStr))
 			}
+		} else {
+			fmt.Println()
+			fmt.Println(labelStyle.Render("⚙️  Опции:") + " " + valueStyle.Render("Нет настроек"))
 		}
 
 		// Инструменты

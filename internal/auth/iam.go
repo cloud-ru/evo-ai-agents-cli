@@ -39,11 +39,11 @@ type IAMAuthService struct {
 	secret   string
 	endpoint string
 	client   *http.Client
-	
+
 	// Кэш токена
-	token      string
-	expiresAt  time.Time
-	mutex      sync.RWMutex
+	token     string
+	expiresAt time.Time
+	mutex     sync.RWMutex
 }
 
 // NewIAMAuthService создает новый сервис IAM аутентификации
@@ -83,7 +83,7 @@ func (s *IAMAuthService) refreshToken(ctx context.Context) (string, error) {
 		return s.token, nil
 	}
 
-	log.Info("Получение нового токена от IAM API", "endpoint", s.endpoint, "key_id", s.keyID)
+	log.Debug("Получение нового токена от IAM API", "endpoint", s.endpoint, "key_id", s.keyID)
 
 	// Подготавливаем запрос
 	reqBody := IAMTokenRequest{
@@ -99,7 +99,7 @@ func (s *IAMAuthService) refreshToken(ctx context.Context) (string, error) {
 	// Создаем HTTP запрос
 	url := s.endpoint + "/api/v1/auth/token"
 	log.Debug("Создание IAM запроса", "url", url, "body_size", len(jsonData))
-	
+
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Error("Ошибка создания IAM запроса", "error", err)
@@ -116,7 +116,7 @@ func (s *IAMAuthService) refreshToken(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer resp.Body.Close()
-	
+
 	log.Debug("IAM ответ получен", "status", resp.StatusCode, "headers", resp.Header)
 
 	// Читаем ответ
@@ -144,7 +144,7 @@ func (s *IAMAuthService) refreshToken(ctx context.Context) (string, error) {
 	s.token = tokenResp.AccessToken
 	s.expiresAt = time.Now().Add(time.Duration(tokenResp.ExpiresIn-300) * time.Second) // 5 минут запаса
 
-	log.Info("Токен успешно получен", "expires_at", s.expiresAt, "expires_in", tokenResp.ExpiresIn)
+	log.Debug("Токен успешно получен", "expires_at", s.expiresAt, "expires_in", tokenResp.ExpiresIn)
 
 	return s.token, nil
 }

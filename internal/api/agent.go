@@ -2,21 +2,118 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 )
 
+// CustomTime представляет кастомный тип времени для парсинга
+type CustomTime struct {
+	time.Time
+}
+
+// UnmarshalJSON кастомный парсинг JSON для времени
+func (ct *CustomTime) UnmarshalJSON(b []byte) error {
+	// Убираем кавычки
+	s := string(b[1 : len(b)-1])
+
+	// Пробуем разные форматы времени
+	formats := []string{
+		time.RFC3339,
+		time.RFC3339Nano,
+		"2006-01-02T15:04:05Z",
+		"2006-01-02T15:04:05.000Z",
+		"2006-01-02T15:04:05.000000Z",
+		"2006-01-02 15:04:05",
+		"2006-01-02T15:04:05",
+	}
+
+	for _, format := range formats {
+		if t, err := time.Parse(format, s); err == nil {
+			ct.Time = t
+			return nil
+		}
+	}
+
+	// Если ничего не сработало, возвращаем ошибку
+	return fmt.Errorf("unable to parse time: %s", s)
+}
+
+// StatusReason представляет причину статуса
+type StatusReason struct {
+	ReasonType string                 `json:"reasonType,omitempty"`
+	Key        string                 `json:"key,omitempty"`
+	Message    string                 `json:"message,omitempty"`
+	Attributes map[string]interface{} `json:"attributes,omitempty"`
+}
+
+// InstanceType представляет тип инстанса
+type InstanceType struct {
+	ID           string `json:"id,omitempty"`
+	Name         string `json:"name,omitempty"`
+	SKUCode      string `json:"skuCode,omitempty"`
+	ResourceCode string `json:"resourceCode,omitempty"`
+	IsActive     bool   `json:"isActive,omitempty"`
+	MCPU         int    `json:"mCpu,omitempty"`
+	MibRAM       int    `json:"mibRam,omitempty"`
+	CreatedAt    string `json:"createdAt,omitempty"`
+	UpdatedAt    string `json:"updatedAt,omitempty"`
+	CreatedBy    string `json:"createdBy,omitempty"`
+	UpdatedBy    string `json:"updatedBy,omitempty"`
+}
+
 // Agent представляет агента
 type Agent struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Status      string                 `json:"status"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
-	Options     map[string]interface{} `json:"options"`
-	LLMOptions  map[string]interface{} `json:"llm_options"`
-	MCPs        []string               `json:"mcp_servers,omitempty"`
+	ID                    string                 `json:"id"`
+	ProjectID             string                 `json:"projectId,omitempty"`
+	Name                  string                 `json:"name"`
+	Description           string                 `json:"description"`
+	Status                string                 `json:"status"`
+	StatusReason          StatusReason           `json:"statusReason,omitempty"`
+	InstanceType          InstanceType           `json:"instanceType,omitempty"`
+	MCPServers            []MCPServerReference   `json:"mcpServers,omitempty"`
+	ImageSource           map[string]interface{} `json:"imageSource,omitempty"`
+	AgentType             string                 `json:"agentType,omitempty"`
+	Options               map[string]interface{} `json:"options,omitempty"`
+	IntegrationOptions    map[string]interface{} `json:"integrationOptions,omitempty"`
+	UsedInAgentSystems    []AgentSystemPreview   `json:"usedInAgentSystems,omitempty"`
+	PublicURL             string                 `json:"publicUrl,omitempty"`
+	ArizePhoenixPublicURL string                 `json:"arizePhoenixPublicUrl,omitempty"`
+	CreatedAt             CustomTime             `json:"createdAt"`
+	UpdatedAt             CustomTime             `json:"updatedAt"`
+	CreatedBy             string                 `json:"createdBy,omitempty"`
+	UpdatedBy             string                 `json:"updatedBy,omitempty"`
+	// Обратная совместимость
+	MCPs []string `json:"mcp_servers,omitempty"`
+}
+
+// MCPServerReference представляет ссылку на MCP сервер
+type MCPServerReference struct {
+	ID     string                 `json:"mcpServerId"`
+	Name   string                 `json:"name"`
+	Status string                 `json:"status,omitempty"`
+	Source map[string]interface{} `json:"source,omitempty"`
+	Tools  []MCPTool              `json:"tools,omitempty"`
+}
+
+// MCPTool представляет инструмент MCP сервера
+type MCPTool struct {
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Args        []MCPToolArg `json:"args,omitempty"`
+}
+
+// MCPToolArg представляет аргумент инструмента MCP
+type MCPToolArg struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Type        string `json:"type"`
+}
+
+// AgentSystemPreview представляет превью системы агентов
+type AgentSystemPreview struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // AgentCreateRequest представляет запрос на создание агента
@@ -90,11 +187,48 @@ func (s *AgentService) List(ctx context.Context, limit, offset int) (*AgentListR
 	return &result, err
 }
 
+// AgentGetResponse представляет ответ с информацией об агенте
+type AgentGetResponse struct {
+	Agent Agent `json:"agent"`
+}
+
 // Get возвращает информацию о конкретном агенте
 func (s *AgentService) Get(ctx context.Context, agentID string) (*Agent, error) {
-	var result Agent
-	err := s.client.Get(ctx, fmt.Sprintf("/api/v1/%s/agents/%s", s.client.projectID, agentID), nil, &result)
-	return &result, err
+	// Сначала парсим в map, чтобы понять структуру
+	var rawResponse map[string]interface{}
+	err := s.client.Get(ctx, fmt.Sprintf("/api/v1/%s/agents/%s", s.client.projectID, agentID), nil, &rawResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	// Пробуем разные варианты структуры
+	if agentData, ok := rawResponse["agent"]; ok {
+		// Если есть поле "agent"
+		agentBytes, err := json.Marshal(agentData)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal agent data: %w", err)
+		}
+
+		var agent Agent
+		if err := json.Unmarshal(agentBytes, &agent); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal agent: %w", err)
+		}
+
+		return &agent, nil
+	}
+
+	// Если нет поля "agent", возможно данные прямо в корне
+	agentBytes, err := json.Marshal(rawResponse)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal response: %w", err)
+	}
+
+	var agent Agent
+	if err := json.Unmarshal(agentBytes, &agent); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal agent from root: %w", err)
+	}
+
+	return &agent, nil
 }
 
 // Create создает нового агента
@@ -189,4 +323,17 @@ type MarketplaceSearchRequest struct {
 	Categories []string `json:"categories,omitempty"`
 	Statuses   []string `json:"statuses,omitempty"`
 	Types      []string `json:"types,omitempty"`
+}
+
+// User представляет пользователя
+type User struct {
+	ID        string     `json:"id"`
+	Email     string     `json:"email"`
+	FirstName string     `json:"firstName"`
+	LastName  string     `json:"lastName"`
+	Username  string     `json:"username"`
+	CreatedAt CustomTime `json:"createdAt"`
+	UpdatedAt CustomTime `json:"updatedAt"`
+	IsActive  bool       `json:"isActive"`
+	Roles     []string   `json:"roles,omitempty"`
 }

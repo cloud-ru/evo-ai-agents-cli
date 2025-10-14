@@ -3,6 +3,5 @@
 includes:
   - prompts.yaml
   - prompts.yaml
-  - aboba
   - mcp-servers.yaml
   - systems.yaml

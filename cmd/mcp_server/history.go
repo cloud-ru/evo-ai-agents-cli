@@ -8,6 +8,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +23,10 @@ var historyCmd = &cobra.Command{
 		serverID := args[0]
 
 		// Получаем историю MCP сервера
+		// Получаем API клиент из DI контейнера
+		container := di.GetContainer()
+		apiClient := container.GetAPI()
+
 		history, err := apiClient.MCPServers.GetHistory(ctx, serverID)
 		if err != nil {
 			log.Fatal("Failed to get MCP server history", "error", err, "server_id", serverID)

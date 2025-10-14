@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -36,6 +37,10 @@ var deleteCmd = &cobra.Command{
 		}
 
 		// Удаляем MCP сервер
+		// Получаем API клиент из DI контейнера
+		container := di.GetContainer()
+		apiClient := container.GetAPI()
+
 		err := apiClient.MCPServers.Delete(ctx, serverID)
 		if err != nil {
 			log.Fatal("Failed to delete MCP server", "error", err, "server_id", serverID)

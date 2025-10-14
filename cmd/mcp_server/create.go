@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/cloudru/ai-agents-cli/internal/api"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -63,6 +64,10 @@ var createCmd = &cobra.Command{
 			}
 		}
 
+		// Получаем API клиент из DI контейнера
+		container := di.GetContainer()
+		apiClient := container.GetAPI()
+
 		// Создаем MCP сервер
 		server, err := apiClient.MCPServers.Create(ctx, req)
 		if err != nil {
@@ -94,7 +99,7 @@ var createCmd = &cobra.Command{
 		}
 
 		fmt.Printf("%s: %s\n", labelStyle.Render("Статус"), valueStyle.Render(server.Status))
-		fmt.Printf("%s: %s\n", labelStyle.Render("Создан"), valueStyle.Render(server.CreatedAt.Format("02.01.2006 15:04:05")))
+		fmt.Printf("%s: %s\n", labelStyle.Render("Создан"), valueStyle.Render(server.CreatedAt.Time.Format("02.01.2006 15:04:05")))
 	},
 }
 

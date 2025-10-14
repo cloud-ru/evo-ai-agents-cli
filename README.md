@@ -1,25 +1,40 @@
 # AI Agents CLI
 
+[![Build Status](https://github.com/cloud-ru/evo-ai-agents-cli/workflows/CI/badge.svg)](https://github.com/cloud-ru/evo-ai-agents-cli/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Version](https://img.shields.io/badge/Go-1.24.3-blue.svg)](https://golang.org/)
+[![Release](https://img.shields.io/github/v/release/cloud-ru/evo-ai-agents-cli)](https://github.com/cloud-ru/evo-ai-agents-cli/releases)
+
 CLI инструмент для управления AI Agents в облачной платформе Cloud.ru.
 
 ## 🚀 Быстрый старт
 
 ### Установка
 
-1. **Скачайте бинарный файл:**
-   ```bash
-   # Скачайте последнюю версию с GitHub Releases
-   wget https://github.com/cloudru/ai-agents-cli/releases/latest/download/ai-agents-cli-linux-amd64
-   chmod +x ai-agents-cli-linux-amd64
-   sudo mv ai-agents-cli-linux-amd64 /usr/local/bin/ai-agents-cli
-   ```
+#### Windows (winget)
+```bash
+winget install CloudRu.AIAgentsCLI
+```
 
-2. **Или соберите из исходников:**
-   ```bash
-   git clone https://github.com/cloudru/ai-agents-cli.git
-   cd ai-agents-cli
-   go build -o bin/ai-agents-cli .
-   ```
+#### macOS/Linux (Homebrew)
+```bash
+brew install cloud-ru/evo-ai-agents-cli/ai-agents-cli
+```
+
+#### Ручная установка
+```bash
+# Скачайте последнюю версию с GitHub Releases
+wget https://github.com/cloud-ru/evo-ai-agents-cli/releases/latest/download/ai-agents-cli-linux-amd64.tar.gz
+tar -xzf ai-agents-cli-linux-amd64.tar.gz
+sudo mv ai-agents-cli /usr/local/bin/
+```
+
+#### Сборка из исходников
+```bash
+git clone https://github.com/cloud-ru/evo-ai-agents-cli.git
+cd evo-ai-agents-cli
+go build -o bin/ai-agents-cli .
+```
 
 ### Настройка
 
@@ -35,9 +50,16 @@ CLI инструмент для управления AI Agents в облачно
 
 3. **Обязательные переменные:**
    ```bash
+   # IAM аутентификация (получите в панели Cloud.ru)
    IAM_KEY_ID=your-iam-key-id
    IAM_SECRET=your-iam-secret
+   
+   # ID проекта AI Agents
    PROJECT_ID=your-project-id
+   
+   # Опциональные настройки
+   IAM_ENDPOINT=https://iam.api.cloud.ru
+   PUBLIC_API_ENDPOINT=ai-agents.api.cloud.ru
    ```
 
 ### Использование
@@ -108,13 +130,16 @@ ai-agents-cli/
 
 ### Переменные окружения
 
-| Переменная | Описание | Обязательная |
-|------------|----------|--------------|
-| `IAM_KEY_ID` | IAM Key ID для аутентификации | ✅ |
-| `IAM_SECRET` | IAM Secret для аутентификации | ✅ |
-| `PROJECT_ID` | ID проекта AI Agents | ✅ |
-| `IAM_ENDPOINT` | IAM API endpoint | ❌ |
-| `PUBLIC_API_ENDPOINT` | AI Agents API endpoint | ❌ |
+| Переменная | Описание | Обязательная | По умолчанию |
+|------------|----------|--------------|--------------|
+| `IAM_KEY_ID` | IAM Key ID для аутентификации | ✅ | - |
+| `IAM_SECRET` | IAM Secret для аутентификации | ✅ | - |
+| `PROJECT_ID` | ID проекта AI Agents | ✅ | - |
+| `IAM_ENDPOINT` | IAM API endpoint | ❌ | `https://iam.api.cloud.ru` |
+| `PUBLIC_API_ENDPOINT` | AI Agents API endpoint | ❌ | `ai-agents.api.cloud.ru` |
+| `SERVICE_APP_ENVIRONMENT` | Окружение приложения | ❌ | `dev` |
+| `SERVICE_LOG_LEVEL` | Уровень логирования | ❌ | `debug` |
+| `BULK_OPERATIONS_CONCURRENCY` | Параллельность bulk операций | ❌ | `20` |
 
 ### Файлы конфигурации
 
@@ -167,9 +192,10 @@ go test ./...
 
 ## 📚 Документация
 
-- [Настройка переменных окружения](ENV_SETUP.md)
 - [Руководство по валидации](TESTING.md)
-- [Отчет о тестировании](TEST_REPORT.md)
+- [Установка и настройка](.github/INSTALL.md)
+- [Примеры использования](examples/usage.md)
+- [API документация](service.swagger.json)
 
 ## 🤝 Вклад в проект
 
@@ -186,8 +212,9 @@ go test ./...
 ## 🆘 Поддержка
 
 - 📧 Email: support@cloud.ru
-- 📖 Документация: https://docs.cloud.ru
-- 🐛 Баги: https://github.com/cloudru/ai-agents-cli/issues
+- 📖 Документация: [Cloud.ru Documentation](https://cloud.ru/docs/administration/ug/topics/api-ref__authentication)
+- 🐛 Баги: [GitHub Issues](https://github.com/cloud-ru/evo-ai-agents-cli/issues)
+- 💬 Обсуждения: [GitHub Discussions](https://github.com/cloud-ru/evo-ai-agents-cli/discussions)
 
 ## 🔄 История изменений
 

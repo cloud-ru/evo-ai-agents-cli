@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 func TestMCPServerService_List(t *testing.T) {
 	// Создаем тестовый сервер
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,8 +34,8 @@ func TestMCPServerService_List(t *testing.T) {
 					Name:        "test-server",
 					Description: "Test MCP server",
 					Status:      "active",
-					CreatedAt:   time.Now(),
-					UpdatedAt:   time.Now(),
+					CreatedAt:   CustomTime{Time: time.Now()},
+					UpdatedAt:   CustomTime{Time: time.Now()},
 					Options:     map[string]interface{}{"host": "localhost"},
 				},
 			},
@@ -84,8 +83,8 @@ func TestMCPServerService_Get(t *testing.T) {
 			Name:        "test-server",
 			Description: "Test MCP server",
 			Status:      "active",
-			CreatedAt:   time.Now(),
-			UpdatedAt:   time.Now(),
+			CreatedAt:   CustomTime{Time: time.Now()},
+			UpdatedAt:   CustomTime{Time: time.Now()},
 			Options:     map[string]interface{}{"host": "localhost"},
 		}
 
@@ -139,8 +138,8 @@ func TestMCPServerService_Create(t *testing.T) {
 			Name:        req.Name,
 			Description: req.Description,
 			Status:      "active",
-			CreatedAt:   time.Now(),
-			UpdatedAt:   time.Now(),
+			CreatedAt:   CustomTime{Time: time.Now()},
+			UpdatedAt:   CustomTime{Time: time.Now()},
 			Options:     req.Options,
 		}
 
@@ -201,8 +200,8 @@ func TestMCPServerService_Update(t *testing.T) {
 			Name:        req.Name,
 			Description: req.Description,
 			Status:      "active",
-			CreatedAt:   time.Now(),
-			UpdatedAt:   time.Now(),
+			CreatedAt:   CustomTime{Time: time.Now()},
+			UpdatedAt:   CustomTime{Time: time.Now()},
 			Options:     req.Options,
 		}
 

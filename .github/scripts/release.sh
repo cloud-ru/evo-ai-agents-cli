@@ -7,7 +7,7 @@ set -e
 
 VERSION=${1:-"1.0.0"}
 GITHUB_TOKEN=${GITHUB_TOKEN:-""}
-REPO="cloudru/ai-agents-cli"
+REPO="cloud-ru/evo-ai-agents-cli"
 
 echo "🚀 Creating release v$VERSION for $REPO"
 

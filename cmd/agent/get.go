@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"github.com/cloudru/ai-agents-cli/internal/di"
+	"github.com/cloudru/ai-agents-cli/internal/ui"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 var (
@@ -24,6 +26,10 @@ var getCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 		agentID := args[0]
+
+		// Получаем API клиент из DI контейнера
+		container := di.GetContainer()
+		apiClient := container.GetAPI()
 
 		// Получаем информацию об агенте
 		agent, err := apiClient.Agents.Get(ctx, agentID)
@@ -41,82 +47,59 @@ var getCmd = &cobra.Command{
 			return
 		}
 
-		// Создаем стили для вывода
-		headerStyle := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("205")).
-			Border(lipgloss.RoundedBorder()).
-			Padding(0, 1)
-
-		labelStyle := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("99"))
-
-		valueStyle := lipgloss.NewStyle().
-			Foreground(lipgloss.Color("252"))
-
-		statusStyle := lipgloss.NewStyle().
-			Bold(true)
-
-		// Выводим заголовок
-		fmt.Println(headerStyle.Render("🤖 Информация об агенте"))
-		fmt.Println()
-
-		// Основная информация
-		fmt.Printf("%s: %s\n", labelStyle.Render("ID"), valueStyle.Render(agent.ID))
-		fmt.Printf("%s: %s\n", labelStyle.Render("Название"), valueStyle.Render(agent.Name))
-
-		if agent.Description != "" {
-			fmt.Printf("%s: %s\n", labelStyle.Render("Описание"), valueStyle.Render(agent.Description))
-		}
-
-		// Статус
-		status := agent.Status
-		switch status {
-		case "ACTIVE":
-			status = statusStyle.Copy().Foreground(lipgloss.Color("2")).Render("🟢 Активен")
-		case "SUSPENDED":
-			status = statusStyle.Copy().Foreground(lipgloss.Color("3")).Render("🟡 Приостановлен")
-		case "ERROR":
-			status = statusStyle.Copy().Foreground(lipgloss.Color("1")).Render("🔴 Ошибка")
-		default:
-			status = statusStyle.Copy().Foreground(lipgloss.Color("8")).Render("⚪ " + status)
-		}
-		fmt.Printf("%s: %s\n", labelStyle.Render("Статус"), status)
-
-		// Даты
-		fmt.Printf("%s: %s\n", labelStyle.Render("Создан"), valueStyle.Render(agent.CreatedAt.Format("02.01.2006 15:04:05")))
-		fmt.Printf("%s: %s\n", labelStyle.Render("Обновлен"), valueStyle.Render(agent.UpdatedAt.Format("02.01.2006 15:04:05")))
-
-		// Опции
-		if len(agent.Options) > 0 {
-			fmt.Println()
-			fmt.Println(labelStyle.Render("⚙️  Опции:"))
-			for key, value := range agent.Options {
-				valueStr := fmt.Sprintf("%v", value)
-				fmt.Printf("  %s: %s\n", labelStyle.Render(key), valueStyle.Render(valueStr))
-			}
-		}
-
-		// LLM опции
-		if len(agent.LLMOptions) > 0 {
-			fmt.Println()
-			fmt.Println(labelStyle.Render("🧠 LLM настройки:"))
-			for key, value := range agent.LLMOptions {
-				valueStr := fmt.Sprintf("%v", value)
-				fmt.Printf("  %s: %s\n", labelStyle.Render(key), valueStyle.Render(valueStr))
-			}
-		}
-
-		// MCP серверы
-		if len(agent.MCPs) > 0 {
-			fmt.Println()
-			fmt.Println(labelStyle.Render("🔌 MCP серверы:"))
-			for _, mcp := range agent.MCPs {
-				fmt.Printf("  • %s\n", valueStyle.Render(mcp))
-			}
-		}
+		// Показываем простую статичную версию
+		result := ui.RenderAgentDetails(agent, ctx, container)
+		fmt.Println(result)
 	},
+}
+
+// getCreatedByInfo получает информацию о создателе агента
+func getCreatedByInfo(ctx context.Context, container *di.Container, userID string) string {
+	if userID == "" {
+		return "Не указан"
+	}
+
+	config := container.GetConfig()
+	if config.CustomerID == "" {
+		// Если нет customerID, возвращаем ID с пояснением
+		return fmt.Sprintf("ID: %s (CUSTOMER_ID не указан)", userID)
+	}
+
+	apiClient := container.GetAPI()
+	user, err := apiClient.Users.Get(ctx, config.CustomerID, userID)
+	if err != nil {
+		// При ошибке API тоже показываем ID
+		return fmt.Sprintf("ID: %s (ошибка получения данных)", userID)
+	}
+
+	return ui.FormatUserName(user.ID, user.FirstName, user.LastName, user.Email)
+}
+
+// getUpdatedByInfo получает информацию об изменяющем агента
+func getUpdatedByInfo(ctx context.Context, container *di.Container, userID string) string {
+	if userID == "" {
+		return "Не указан"
+	}
+
+	config := container.GetConfig()
+	if config.CustomerID == "" {
+		// Если нет customerID, возвращаем ID с пояснением
+		return fmt.Sprintf("ID: %s (CUSTOMER_ID не указан)", userID)
+	}
+
+	apiClient := container.GetAPI()
+	user, err := apiClient.Users.Get(ctx, config.CustomerID, userID)
+	if err != nil {
+		// При ошибке API тоже показываем ID
+		return fmt.Sprintf("ID: %s (ошибка получения данных)", userID)
+	}
+
+	return ui.FormatUserName(user.ID, user.FirstName, user.LastName, user.Email)
+}
+
+// isTerminal проверяет, является ли терминал терминалом
+func isTerminal() bool {
+	return term.IsTerminal(int(os.Stdout.Fd()))
 }
 
 func init() {

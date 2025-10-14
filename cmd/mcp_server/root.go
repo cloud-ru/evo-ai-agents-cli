@@ -2,15 +2,12 @@ package mcp_server
 
 import (
 	"github.com/charmbracelet/log"
-	"github.com/cloudru/ai-agents-cli/internal/api"
-	"github.com/cloudru/ai-agents-cli/internal/auth"
-	"github.com/cloudru/ai-agents-cli/internal/config"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
 var (
 	isVerbose bool
-	apiClient *api.API
 )
 
 // RootCMD represents the base command when called without any subcommands
@@ -37,7 +34,7 @@ MCP серверы предоставляют контекст и инструм
   ai-agents-cli mcp-servers get server-id
   ai-agents-cli mcp-servers create --name my-server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Info("Команда MCP серверов вызвана без подкоманды")
+		log.Debug("Команда MCP серверов вызвана без подкоманды")
 		// Показываем справку если нет подкоманд
 		cmd.Help()
 	},
@@ -45,39 +42,24 @@ MCP серверы предоставляют контекст и инструм
 }
 
 func init() {
-	log.Info("Инициализация MCP серверов команды")
-	
-	// Инициализируем API клиент
-	cfg, err := config.Load()
-	if err != nil {
-		log.Error("Ошибка загрузки конфигурации", "error", err)
-		log.Fatal("Failed to load config", "error", err)
-	}
+	log.Debug("Инициализация MCP серверов команды")
 
-	log.Debug("Конфигурация загружена", "project_id", cfg.ProjectID, "api_endpoint", cfg.IntegrationApiGrpcAddr)
+	// Инициализируем DI контейнер
+	container := di.GetContainer()
 
-	if cfg.IAMKeyID == "" {
-		log.Error("IAM_KEY_ID не установлен")
-		log.Fatal("IAM_KEY_ID environment variable is required")
-	}
+	// Получаем API клиент из контейнера (для инициализации)
+	_ = container.GetAPI()
 
-	if cfg.IAMSecret == "" {
-		log.Error("IAM_SECRET не установлен")
-		log.Fatal("IAM_SECRET environment variable is required")
-	}
+	log.Debug("MCP серверы команда инициализирована успешно")
 
-	if cfg.ProjectID == "" {
-		log.Error("PROJECT_ID не установлен")
-		log.Fatal("PROJECT_ID environment variable is required")
-	}
-
-	// Создаем IAM сервис аутентификации
-	log.Info("Создание IAM сервиса аутентификации", "endpoint", cfg.IAMEndpoint)
-	authService := auth.NewIAMAuthService(cfg.IAMKeyID, cfg.IAMSecret, cfg.IAMEndpoint)
-	
-	// Создаем API клиент с IAM аутентификацией
-	log.Info("Создание API клиента", "base_url", "https://"+cfg.IntegrationApiGrpcAddr, "project_id", cfg.ProjectID)
-	apiClient = api.NewAPI("https://"+cfg.IntegrationApiGrpcAddr, cfg.ProjectID, authService)
-	
-	log.Info("MCP серверы команда инициализирована успешно")
+	// Добавляем подкоманды
+	RootCMD.AddCommand(listCmd)
+	RootCMD.AddCommand(getCmd)
+	RootCMD.AddCommand(createCmd)
+	RootCMD.AddCommand(updateCmd)
+	RootCMD.AddCommand(deleteCmd)
+	RootCMD.AddCommand(resumeCmd)
+	RootCMD.AddCommand(suspendCmd)
+	RootCMD.AddCommand(historyCmd)
+	RootCMD.AddCommand(deployCmd)
 }

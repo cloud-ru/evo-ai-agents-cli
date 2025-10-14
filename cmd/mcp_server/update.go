@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/cloudru/ai-agents-cli/internal/api"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -64,6 +65,10 @@ var updateCmd = &cobra.Command{
 			}
 		}
 
+		// Получаем API клиент из DI контейнера
+		container := di.GetContainer()
+		apiClient := container.GetAPI()
+
 		// Обновляем MCP сервер
 		server, err := apiClient.MCPServers.Update(ctx, serverID, req)
 		if err != nil {
@@ -95,7 +100,7 @@ var updateCmd = &cobra.Command{
 		}
 
 		fmt.Printf("%s: %s\n", labelStyle.Render("Статус"), valueStyle.Render(server.Status))
-		fmt.Printf("%s: %s\n", labelStyle.Render("Обновлен"), valueStyle.Render(server.UpdatedAt.Format("02.01.2006 15:04:05")))
+		fmt.Printf("%s: %s\n", labelStyle.Render("Обновлен"), valueStyle.Render(server.UpdatedAt.Time.Format("02.01.2006 15:04:05")))
 	},
 }
 

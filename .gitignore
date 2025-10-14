@@ -126,12 +126,41 @@ go.work.sum
 # env file
 .env
 
-
+# Build artifacts
 bin/
+dist/
+release/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Coverage files
+coverage.out
+coverage.html
+*.out
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# IDE files
 .task
 .vscode
+.idea
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Go specific
+go.work
+go.work.sum
+
+# Project specific
 mods
 .envrc
 completions/
 manpages/
-dist/

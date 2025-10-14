@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/cloudru/ai-agents-cli/internal/api"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/cloudru/ai-agents-cli/localizations"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -132,7 +133,11 @@ var deployCmd = &cobra.Command{
 				Options:     serverConfig.Options,
 			}
 
-			server, err := apiClient.MCPServers.Create(ctx, req)
+		// Получаем API клиент из DI контейнера
+		container := di.GetContainer()
+		apiClient := container.GetAPI()
+
+					server, err := apiClient.MCPServers.Create(ctx, req)
 			if err != nil {
 				fmt.Printf("%s %s: %v\n", errorStyle.Render("❌"), serverConfig.Name, err)
 				errorCount++

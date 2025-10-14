@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +21,10 @@ var suspendCmd = &cobra.Command{
 		serverID := args[0]
 
 		// Приостанавливаем работу MCP сервера
+		// Получаем API клиент из DI контейнера
+		container := di.GetContainer()
+		apiClient := container.GetAPI()
+
 		err := apiClient.MCPServers.Suspend(ctx, serverID)
 		if err != nil {
 			log.Fatal("Failed to suspend MCP server", "error", err, "server_id", serverID)

@@ -1,20 +1,20 @@
 class AiAgentsCli < Formula
   desc "Command-line tool for managing AI agents and MCP servers"
-  homepage "https://github.com/cloudru/ai-agents-cli"
-  url "https://github.com/cloudru/ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-darwin-amd64.tar.gz"
+  homepage "https://github.com/cloud-ru/evo-ai-agents-cli"
+  url "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-darwin-amd64.tar.gz"
   sha256 "PLACEHOLDER_SHA256"
   license "MIT"
   version "1.0.0"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/cloudru/ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-darwin-arm64.tar.gz"
+      url "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-darwin-arm64.tar.gz"
       sha256 "PLACEHOLDER_SHA256_ARM64"
     end
   end
 
   on_linux do
-    url "https://github.com/cloudru/ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-linux-amd64.tar.gz"
+    url "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-linux-amd64.tar.gz"
     sha256 "PLACEHOLDER_SHA256_LINUX"
   end
 
@@ -47,11 +47,11 @@ class AiAgentsCli < Formula
       AI Agents CLI has been installed!
       
       To get started:
-        1. Set your API key: export API_KEY="your-api-key"
+        1. Set your IAM credentials: export IAM_KEY_ID="your-iam-key-id" IAM_SECRET="your-iam-secret"
         2. Set your project ID: export PROJECT_ID="your-project-id"
         3. Run: ai-agents-cli --help
       
-      For more information, visit: https://github.com/cloudru/ai-agents-cli
+      For more information, visit: https://github.com/cloud-ru/evo-ai-agents-cli
     EOS
   end
 end

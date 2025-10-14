@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/cloudru/ai-agents-cli/internal/api"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -30,6 +31,10 @@ var marketplaceCmd = &cobra.Command{
 	Long:  "Показывает список агентов, доступных в маркетплейсе",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
+
+		// Получаем API клиент из DI контейнера
+		container := di.GetContainer()
+		apiClient := container.GetAPI()
 
 		// Формируем запрос поиска
 		searchReq := &api.MarketplaceSearchRequest{

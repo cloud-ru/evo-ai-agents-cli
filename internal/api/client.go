@@ -75,7 +75,7 @@ func (c *Client) doRequest(ctx context.Context, opts RequestOptions) (*http.Resp
 
 	// Устанавливаем заголовки
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	// Получаем токен для аутентификации
 	if c.auth != nil {
 		log.Debug("Getting auth token for API request")
@@ -118,7 +118,7 @@ func (c *Client) parseResponse(resp *http.Response, target interface{}) error {
 
 	if resp.StatusCode >= 400 {
 		log.Error("API error response", "status", resp.StatusCode, "body", string(body))
-		
+
 		var errorResp struct {
 			Error struct {
 				Code    int    `json:"code"`
@@ -135,6 +135,11 @@ func (c *Client) parseResponse(resp *http.Response, target interface{}) error {
 	}
 
 	if target != nil {
+		// Отладочный вывод для агентов
+		if len(body) > 0 && len(body) < 1000 {
+			log.Debug("Raw response body", "body", string(body))
+		}
+
 		if err := json.Unmarshal(body, target); err != nil {
 			log.Error("Failed to parse response JSON", "error", err, "body", string(body))
 			return fmt.Errorf("failed to parse response: %w", err)
@@ -153,6 +158,7 @@ func (c *Client) Get(ctx context.Context, path string, query map[string]string, 
 		Query:  query,
 	})
 	if err != nil {
+		log.Error("Failed to execute GET request", "error", err, "url", fmt.Sprintf("%s%s", c.baseURL, path))
 		return err
 	}
 
@@ -167,6 +173,7 @@ func (c *Client) Post(ctx context.Context, path string, body interface{}, result
 		Body:   body,
 	})
 	if err != nil {
+		log.Error("Failed to execute POST request", "error", err, "url", fmt.Sprintf("%s%s", c.baseURL, path))
 		return err
 	}
 
@@ -181,6 +188,7 @@ func (c *Client) Put(ctx context.Context, path string, body interface{}, result 
 		Body:   body,
 	})
 	if err != nil {
+		log.Error("Failed to execute PUT request", "error", err, "url", fmt.Sprintf("%s%s", c.baseURL, path))
 		return err
 	}
 
@@ -194,6 +202,7 @@ func (c *Client) Delete(ctx context.Context, path string, result interface{}) er
 		Path:   path,
 	})
 	if err != nil {
+		log.Error("Failed to execute DELETE request", "error", err, "url", fmt.Sprintf("%s%s", c.baseURL, path))
 		return err
 	}
 

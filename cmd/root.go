@@ -27,14 +27,17 @@ var RootCMD = &cobra.Command{
 
 Для начала работы используйте команду 'validate' для проверки конфигурации
 или '--help' для просмотра всех доступных команд.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// Получаем значение флага verbose
+		verbose, _ := cmd.Flags().GetBool("verbose")
+
 		// Настройка логирования
 		logger := log.New(os.Stderr)
 		logger.SetReportTimestamp(true)
 		logger.SetReportCaller(true)
-		
+
 		// Установка уровня логирования
-		if isVerbose {
+		if verbose {
 			logger.SetLevel(log.DebugLevel)
 			logger.Info("Включен подробный режим логирования")
 		} else {
@@ -42,11 +45,12 @@ var RootCMD = &cobra.Command{
 		}
 
 		log.SetDefault(logger)
-		log.Info("AI Agents CLI запущен", "version", "1.0.0", "verbose", isVerbose)
-
+		log.Debug("AI Agents CLI запущен", "version", "1.0.0", "verbose", verbose)
+	},
+	Run: func(cmd *cobra.Command, args []string) {
 		// Показываем справку если нет аргументов
 		if len(args) == 0 {
-			log.Info("Показ справки по командам")
+			log.Debug("Показ справки по командам")
 			cmd.Help()
 		}
 	},

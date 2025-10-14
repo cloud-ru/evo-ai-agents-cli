@@ -5,9 +5,9 @@ Publisher: Cloud.ru
 PublisherUrl: https://cloud.ru
 PublisherSupportUrl: https://cloud.ru/support
 PackageName: AI Agents CLI
-PackageUrl: https://github.com/cloudru/ai-agents-cli
+PackageUrl: https://github.com/cloud-ru/evo-ai-agents-cli
 License: MIT
-LicenseUrl: https://github.com/cloudru/ai-agents-cli/blob/main/LICENSE
+LicenseUrl: https://github.com/cloud-ru/evo-ai-agents-cli/blob/main/LICENSE
 Copyright: Copyright (c) 2025 Cloud.ru
 CopyrightUrl: https://cloud.ru
 ShortDescription: Command-line tool for managing AI agents and MCP servers
@@ -38,7 +38,7 @@ Commands:
 InstallerType: zip
 Installers:
   - Architecture: x64
-    InstallerUrl: https://github.com/cloudru/ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-windows-amd64.zip
+    InstallerUrl: https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-windows-amd64.zip
     InstallerSha256: PLACEHOLDER_SHA256
     InstallerType: zip
     InstallerSwitches:

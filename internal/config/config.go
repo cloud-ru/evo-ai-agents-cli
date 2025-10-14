@@ -24,7 +24,8 @@ type Config struct {
 
 	IntegrationApiGrpcAddr string `env:"PUBLIC_API_ENDPOINT"          envDefault:"ai-agents.api.cloud.ru"`
 	ProjectID              string `env:"PROJECT_ID"                   envDefault:""`
-	
+	CustomerID             string `env:"CUSTOMER_ID"                  envDefault:""`
+
 	// IAM аутентификация
 	IAMKeyID    string `env:"IAM_KEY_ID"    envDefault:""`
 	IAMSecret   string `env:"IAM_SECRET"    envDefault:""`

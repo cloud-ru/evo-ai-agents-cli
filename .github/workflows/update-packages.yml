@@ -1,0 +1,102 @@
+name: Update Package Managers
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-homebrew:
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Get release info
+      id: release
+      run: |
+        echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Download release assets
+      run: |
+        mkdir -p assets
+        cd assets
+        
+        # Download macOS Intel binary
+        wget -q "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/${{ steps.release.outputs.TAG_NAME }}/ai-agents-cli-darwin-amd64.tar.gz"
+        
+        # Download macOS ARM binary
+        wget -q "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/${{ steps.release.outputs.TAG_NAME }}/ai-agents-cli-darwin-arm64.tar.gz"
+        
+        # Download Linux binary
+        wget -q "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/${{ steps.release.outputs.TAG_NAME }}/ai-agents-cli-linux-amd64.tar.gz"
+
+    - name: Calculate checksums
+      id: checksums
+      run: |
+        echo "DARWIN_AMD64_SHA=$(sha256sum assets/ai-agents-cli-darwin-amd64.tar.gz | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        echo "DARWIN_ARM64_SHA=$(sha256sum assets/ai-agents-cli-darwin-arm64.tar.gz | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        echo "LINUX_AMD64_SHA=$(sha256sum assets/ai-agents-cli-linux-amd64.tar.gz | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+
+    - name: Update Homebrew formula
+      run: |
+        # Update the formula with new version and checksums
+        sed -i "s/version \"[^\"]*\"/version \"${{ steps.release.outputs.VERSION }}\"/" .github/package-managers/brew/ai-agents-cli.rb
+        sed -i "s/sha256 \"[^\"]*\"/sha256 \"${{ steps.checksums.outputs.DARWIN_AMD64_SHA }}\"/" .github/package-managers/brew/ai-agents-cli.rb
+        sed -i "s/sha256 \"[^\"]*_ARM64\"/sha256 \"${{ steps.checksums.outputs.DARWIN_ARM64_SHA }}\"/" .github/package-managers/brew/ai-agents-cli.rb
+        sed -i "s/sha256 \"[^\"]*_LINUX\"/sha256 \"${{ steps.checksums.outputs.LINUX_AMD64_SHA }}\"/" .github/package-managers/brew/ai-agents-cli.rb
+        
+        # Update URLs
+        sed -i "s|url \"https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/[^\"]*\"|url \"https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/${{ steps.release.outputs.TAG_NAME }}/ai-agents-cli-darwin-amd64.tar.gz\"|" .github/package-managers/brew/ai-agents-cli.rb
+
+    - name: Commit updated formula
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .github/package-managers/brew/ai-agents-cli.rb
+        git commit -m "Update Homebrew formula to ${{ steps.release.outputs.VERSION }}" || exit 0
+        git push
+
+  update-winget:
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Get release info
+      id: release
+      run: |
+        echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Download Windows binary
+      run: |
+        mkdir -p assets
+        cd assets
+        wget -q "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/${{ steps.release.outputs.TAG_NAME }}/ai-agents-cli-windows-amd64.zip"
+
+    - name: Calculate Windows checksum
+      id: checksums
+      run: |
+        echo "WINDOWS_AMD64_SHA=$(sha256sum assets/ai-agents-cli-windows-amd64.zip | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+
+    - name: Update Winget manifest
+      run: |
+        # Update the manifest with new version and checksum
+        sed -i "s/PackageVersion: [0-9.]*/PackageVersion: ${{ steps.release.outputs.VERSION }}/" .github/package-managers/winget/ai-agents-cli.yaml
+        sed -i "s/InstallerSha256: [a-f0-9]*/InstallerSha256: ${{ steps.checksums.outputs.WINDOWS_AMD64_SHA }}/" .github/package-managers/winget/ai-agents-cli.yaml
+        
+        # Update installer URL
+        sed -i "s|InstallerUrl: https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/[^\"]*|InstallerUrl: https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/${{ steps.release.outputs.TAG_NAME }}/ai-agents-cli-windows-amd64.zip|" .github/package-managers/winget/ai-agents-cli.yaml
+
+    - name: Commit updated manifest
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .github/package-managers/winget/ai-agents-cli.yaml
+        git commit -m "Update Winget manifest to ${{ steps.release.outputs.VERSION }}" || exit 0
+        git push

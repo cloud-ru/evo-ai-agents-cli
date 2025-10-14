@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/cloudru/ai-agents-cli/internal/api"
+	"github.com/cloudru/ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -95,6 +96,9 @@ func showLogs(ctx context.Context) {
 }
 
 func showMCPServerLogs(ctx context.Context, serverID string) {
+	container := di.GetContainer()
+	apiClient := container.GetAPI()
+
 	history, err := apiClient.MCPServers.GetHistory(ctx, serverID)
 	if err != nil {
 		log.Fatal("Failed to get MCP server history", "error", err, "server_id", serverID)
@@ -104,6 +108,9 @@ func showMCPServerLogs(ctx context.Context, serverID string) {
 }
 
 func showAgentLogs(ctx context.Context, agentID string) {
+	container := di.GetContainer()
+	apiClient := container.GetAPI()
+
 	history, err := apiClient.Agents.GetHistory(ctx, agentID)
 	if err != nil {
 		log.Fatal("Failed to get agent history", "error", err, "agent_id", agentID)
@@ -113,6 +120,9 @@ func showAgentLogs(ctx context.Context, agentID string) {
 }
 
 func showAgentSystemLogs(ctx context.Context, systemID string) {
+	container := di.GetContainer()
+	apiClient := container.GetAPI()
+
 	history, err := apiClient.AgentSystems.GetHistory(ctx, systemID)
 	if err != nil {
 		log.Fatal("Failed to get agent system history", "error", err, "system_id", systemID)
@@ -122,6 +132,9 @@ func showAgentSystemLogs(ctx context.Context, systemID string) {
 }
 
 func showSystemLogs(ctx context.Context) {
+	container := di.GetContainer()
+	apiClient := container.GetAPI()
+
 	// Получаем логи всех ресурсов
 	servers, err := apiClient.MCPServers.List(ctx, 50, 0)
 	if err != nil {

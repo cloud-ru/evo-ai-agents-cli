@@ -20,3 +20,5 @@ func (m *MockIAMService) IsAuthenticated() bool {
 func (m *MockIAMService) ClearToken() {
 	m.token = ""
 }
+
+

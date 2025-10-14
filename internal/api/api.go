@@ -10,6 +10,7 @@ type API struct {
 	MCPServers   *MCPServerService
 	Agents       *AgentService
 	AgentSystems *AgentSystemService
+	Users        *UserService
 }
 
 // NewAPI создает новый экземпляр API с всеми сервисами
@@ -21,5 +22,6 @@ func NewAPI(baseURL, projectID string, authService auth.IAMAuthServiceInterface)
 		MCPServers:   NewMCPServerService(client),
 		Agents:       NewAgentService(client),
 		AgentSystems: NewAgentSystemService(client),
+		Users:        NewUserService(client),
 	}
 }

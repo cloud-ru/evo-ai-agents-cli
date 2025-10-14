@@ -8,14 +8,19 @@ import (
 
 // MCPServer представляет MCP сервер
 type MCPServer struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Status      string                 `json:"status"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
-	Options     map[string]interface{} `json:"options"`
-	Tools       []Tool                 `json:"tools,omitempty"`
+	ID           string                 `json:"id"`
+	Name         string                 `json:"name"`
+	Description  string                 `json:"description"`
+	Status       string                 `json:"status"`
+	StatusReason StatusReason           `json:"statusReason,omitempty"`
+	InstanceType InstanceType           `json:"instanceType,omitempty"`
+	ImageSource  map[string]interface{} `json:"imageSource,omitempty"`
+	Options      map[string]interface{} `json:"options,omitempty"`
+	Tools        []Tool                 `json:"tools,omitempty"`
+	CreatedAt    CustomTime             `json:"createdAt"`
+	UpdatedAt    CustomTime             `json:"updatedAt"`
+	CreatedBy    string                 `json:"createdBy,omitempty"`
+	UpdatedBy    string                 `json:"updatedBy,omitempty"`
 }
 
 // Tool представляет инструмент MCP сервера

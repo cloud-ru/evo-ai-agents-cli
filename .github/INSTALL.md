@@ -19,7 +19,7 @@ winget uninstall CloudRu.AIAgentsCLI
 
 ```bash
 # Добавление tap (если нужно)
-brew tap cloudru/ai-agents-cli
+brew tap cloud-ru/evo-ai-agents-cli
 
 # Установка
 brew install ai-agents-cli
@@ -35,7 +35,7 @@ brew uninstall ai-agents-cli
 
 ### 1. Скачивание бинарного файла
 
-Перейдите на [страницу релизов](https://github.com/cloudru/ai-agents-cli/releases) и скачайте подходящий файл для вашей платформы:
+Перейдите на [страницу релизов](https://github.com/cloud-ru/evo-ai-agents-cli/releases) и скачайте подходящий файл для вашей платформы:
 
 - **Windows**: `ai-agents-cli-windows-amd64.zip`
 - **macOS (Intel)**: `ai-agents-cli-darwin-amd64.tar.gz`
@@ -88,8 +88,10 @@ ai-agents-cli --help
 
 ```bash
 # .env файл
-export API_KEY="your-api-key-here"
-export PROJECT_ID="your-project-id-here"
+export IAM_KEY_ID="your-iam-key-id"
+export IAM_SECRET="your-iam-secret"
+export PROJECT_ID="your-project-id"
+export IAM_ENDPOINT="https://iam.api.cloud.ru"
 export PUBLIC_API_ENDPOINT="ai-agents.api.cloud.ru"
 ```
 
@@ -152,8 +154,8 @@ brew upgrade ai-agents-cli
 
 ```bash
 # Клонируйте репозиторий
-git clone https://github.com/cloudru/ai-agents-cli.git
-cd ai-agents-cli
+git clone https://github.com/cloud-ru/evo-ai-agents-cli.git
+cd evo-ai-agents-cli
 
 # Установите зависимости
 go mod download
@@ -169,10 +171,10 @@ go build -o ai-agents-cli .
 
 ```bash
 # Установка последней версии
-go install github.com/cloudru/ai-agents-cli@latest
+go install github.com/cloud-ru/evo-ai-agents-cli@latest
 
 # Установка конкретной версии
-go install github.com/cloudru/ai-agents-cli@v1.0.0
+go install github.com/cloud-ru/evo-ai-agents-cli@v1.0.0
 ```
 
 ## 🔍 Устранение неполадок
@@ -184,12 +186,13 @@ go install github.com/cloudru/ai-agents-cli@v1.0.0
 - Перезапустите терминал
 - Проверьте права доступа к файлу
 
-### Проблема: "API_KEY environment variable is required"
+### Проблема: "IAM_KEY_ID environment variable is required"
 
 **Решение:**
-- Установите переменную окружения API_KEY
-- Проверьте правильность API ключа
-- Убедитесь, что переменная экспортирована
+- Установите переменную окружения IAM_KEY_ID
+- Установите переменную окружения IAM_SECRET
+- Проверьте правильность IAM ключей
+- Убедитесь, что переменные экспортированы
 
 ### Проблема: "Permission denied"
 
@@ -204,16 +207,16 @@ sudo ./ai-agents-cli
 
 ## 📚 Дополнительные ресурсы
 
-- [Документация](https://github.com/cloudru/ai-agents-cli/blob/main/README.md)
-- [Примеры использования](https://github.com/cloudru/ai-agents-cli/tree/main/examples)
-- [CI/CD интеграция](https://github.com/cloudru/ai-agents-cli/tree/main/examples/.github/workflows)
-- [Сообщить об ошибке](https://github.com/cloudru/ai-agents-cli/issues)
+- [Документация](https://github.com/cloud-ru/evo-ai-agents-cli/blob/main/README.md)
+- [Примеры использования](https://github.com/cloud-ru/evo-ai-agents-cli/tree/main/examples)
+- [CI/CD интеграция](https://github.com/cloud-ru/evo-ai-agents-cli/tree/main/.github/workflows)
+- [Сообщить об ошибке](https://github.com/cloud-ru/evo-ai-agents-cli/issues)
 
 ## 🆘 Поддержка
 
 Если у вас возникли проблемы с установкой:
 
-1. Проверьте [Issues](https://github.com/cloudru/ai-agents-cli/issues)
+1. Проверьте [Issues](https://github.com/cloud-ru/evo-ai-agents-cli/issues)
 2. Создайте новый Issue с подробным описанием проблемы
 3. Обратитесь к команде разработки
 
