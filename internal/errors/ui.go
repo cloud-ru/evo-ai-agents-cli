@@ -395,12 +395,12 @@ func formatSuggestion(suggestion string) string {
 	// Если это ссылка на документацию, делаем её более заметной
 	if strings.Contains(suggestion, "cloud.ru/docs/ai-agents") {
 		// Заменяем обычную ссылку на более красивую
-		return strings.Replace(suggestion, 
+		return strings.Replace(suggestion,
 			"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
 			"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
 			-1)
 	}
-	
+
 	// Для остальных подсказок возвращаем как есть
 	return suggestion
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/charmbracelet/log"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -38,15 +38,24 @@ var listCmd = &cobra.Command{
 
 		// Проверяем размер терминала
 		if err := ui.CheckTerminalSize(); err != nil {
-			log.Error("Ошибка размера терминала", "error", err)
-			fmt.Println("❌", err)
+			errorHandler := errors.NewHandler()
+			appErr := errorHandler.WrapUserError(err, "TERMINAL_SIZE_ERROR", "Ошибка размера терминала")
+			fmt.Println(errorHandler.HandlePlain(appErr))
 			return
 		}
 
 		// Показываем таблицу MCP серверов
 		if err := ui.ShowMCPServersListFromAPI(ctx, limit, offset); err != nil {
-			log.Error("Ошибка отображения таблицы MCP серверов", "error", err)
-			fmt.Println(ui.CheckAndDisplayError(err))
+			errorHandler := errors.NewHandler()
+			appErr := errorHandler.WrapAPIError(err, "MCP_SERVERS_LIST_FAILED", "Ошибка получения списка MCP серверов")
+			appErr = appErr.WithSuggestions(
+				"Проверьте переменные окружения: IAM_KEY_ID, IAM_SECRET_KEY, IAM_ENDPOINT",
+				"Убедитесь что вы авторизованы: ai-agents-cli auth login",
+				"Проверьте доступность API: curl -I $IAM_ENDPOINT",
+				"Обратитесь к администратору для получения учетных данных",
+				"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
+			)
+			fmt.Println(errorHandler.HandlePlain(appErr))
 			return
 		}
 	},

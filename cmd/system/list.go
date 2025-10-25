@@ -3,9 +3,10 @@ package system
 import (
 	"context"
 	"fmt"
+	"os"
 
-	"github.com/charmbracelet/log"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -24,18 +25,39 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
+		// Создаем обработчик ошибок
+		errorHandler := errors.NewHandler()
+
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
 		apiClient, err := container.GetAPI()
 		if err != nil {
-			log.Fatal("Failed to get API client", "error", err)
+			appErr := errorHandler.WrapAPIError(err, "API_CLIENT_ERROR", "Ошибка получения API клиента")
+			appErr = appErr.WithSuggestions(
+				"Проверьте переменные окружения: IAM_KEY_ID, IAM_SECRET_KEY, IAM_ENDPOINT",
+				"Убедитесь что вы авторизованы: ai-agents-cli auth login",
+				"Проверьте доступность API: curl -I $IAM_ENDPOINT",
+				"Обратитесь к администратору для получения учетных данных",
+				"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
+			)
+			fmt.Println(errorHandler.HandlePlain(appErr))
+			os.Exit(1)
 		}
 
 		if systemOutputFormat == "json" {
 			// Выводим в JSON формате
 			systems, err := apiClient.AgentSystems.List(ctx, systemLimit, systemOffset)
 			if err != nil {
-				log.Fatal("Failed to get systems list", "error", err)
+				appErr := errorHandler.WrapAPIError(err, "SYSTEMS_LIST_FAILED", "Ошибка получения списка систем")
+				appErr = appErr.WithSuggestions(
+					"Проверьте переменные окружения: IAM_KEY_ID, IAM_SECRET_KEY, IAM_ENDPOINT",
+					"Убедитесь что вы авторизованы: ai-agents-cli auth login",
+					"Проверьте доступность API: curl -I $IAM_ENDPOINT",
+					"Обратитесь к администратору для получения учетных данных",
+					"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
+				)
+				fmt.Println(errorHandler.HandlePlain(appErr))
+				os.Exit(1)
 			}
 
 			// Выводим JSON
@@ -44,9 +66,17 @@ var listCmd = &cobra.Command{
 		}
 
 		// Показываем интерактивную таблицу
-
 		if err = ui.ShowAgentSystemsListFromAPI(ctx, systemLimit, systemOffset); err != nil {
-			log.Fatal("Failed to show systems table", "error", err)
+			appErr := errorHandler.WrapAPIError(err, "SYSTEMS_TABLE_ERROR", "Ошибка отображения таблицы систем")
+			appErr = appErr.WithSuggestions(
+				"Проверьте переменные окружения: IAM_KEY_ID, IAM_SECRET_KEY, IAM_ENDPOINT",
+				"Убедитесь что вы авторизованы: ai-agents-cli auth login",
+				"Проверьте доступность API: curl -I $IAM_ENDPOINT",
+				"Обратитесь к администратору для получения учетных данных",
+				"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
+			)
+			fmt.Println(errorHandler.HandlePlain(appErr))
+			os.Exit(1)
 		}
 	},
 }
