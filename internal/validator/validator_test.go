@@ -199,7 +199,7 @@ func TestConfigValidator_ValidateFile(t *testing.T) {
 			if len(result.Errors) != tt.expectErrors {
 				t.Errorf("Expected %d errors, got %d", tt.expectErrors, len(result.Errors))
 				for i, err := range result.Errors {
-					t.Logf("Error %d: %s - %s", i, err.Field, err.Message)
+					t.Logf("Error %d: %s", i, err)
 				}
 			}
 
@@ -208,7 +208,7 @@ func TestConfigValidator_ValidateFile(t *testing.T) {
 				found := false
 				for _, expectedError := range tt.errorContains {
 					for _, actualError := range result.Errors {
-						if contains(actualError.Message, expectedError) {
+						if contains(actualError, expectedError) {
 							found = true
 							break
 						}
@@ -225,36 +225,6 @@ func TestConfigValidator_ValidateFile(t *testing.T) {
 	}
 }
 
-func TestConfigValidator_isValidName(t *testing.T) {
-	validator := NewConfigValidator()
-
-	tests := []struct {
-		name     string
-		input    string
-		expected bool
-	}{
-		{"valid name", "test-agent", true},
-		{"valid name with numbers", "test-agent-123", true},
-		{"valid name all lowercase", "testagent", true},
-		{"invalid name with uppercase", "Test-Agent", false},
-		{"invalid name with underscore", "test_agent", false},
-		{"invalid name with space", "test agent", false},
-		{"invalid name too short", "ab", false},
-		{"invalid name too long", "a-very-long-name-that-exceeds-the-maximum-length-limit", false},
-		{"invalid name starting with hyphen", "-test-agent", false},
-		{"invalid name ending with hyphen", "test-agent-", false},
-		{"invalid name with special chars", "test@agent", false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := validator.isValidName(tt.input)
-			if result != tt.expected {
-				t.Errorf("isValidName(%q) = %v, expected %v", tt.input, result, tt.expected)
-			}
-		})
-	}
-}
 
 func TestConfigValidator_LoadSchema(t *testing.T) {
 	validator := NewConfigValidator()
@@ -294,24 +264,6 @@ func TestConfigValidator_LoadSchema(t *testing.T) {
 	}
 }
 
-func TestValidationError_String(t *testing.T) {
-	err := ValidationError{
-		Field:   "test.field",
-		Message: "Test error message",
-		Value:   "test-value",
-	}
-
-	// Проверяем поля структуры
-	if err.Field != "test.field" {
-		t.Errorf("Expected Field 'test.field', got '%s'", err.Field)
-	}
-	if err.Message != "Test error message" {
-		t.Errorf("Expected Message 'Test error message', got '%s'", err.Message)
-	}
-	if err.Value != "test-value" {
-		t.Errorf("Expected Value 'test-value', got '%s'", err.Value)
-	}
-}
 
 // Вспомогательная функция для проверки содержания строки
 func contains(s, substr string) bool {

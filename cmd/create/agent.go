@@ -2,13 +2,14 @@ package create
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/log"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/scaffolder"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -31,15 +32,22 @@ CI/CD пайплайнами и документацией.
 `,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Создаем обработчик ошибок
+		errorHandler := errors.NewHandler()
+
 		// Always use full-screen TUI form for better UX
 		formData, err := ui.RunProjectForm("agent")
 		if err != nil {
-			log.Fatal("Failed to get form data", "error", err)
+			appErr := errorHandler.WrapUserError(err, "FORM_ERROR", "Ошибка при заполнении формы")
+			fmt.Println(errorHandler.Handle(appErr))
+			os.Exit(1)
 		}
 
 		projectName := formData.ProjectName
 		if projectName == "" {
-			log.Fatal("Project name is required")
+			appErr := errors.ValidationError("MISSING_PROJECT_NAME", "Название проекта обязательно")
+			fmt.Println(errorHandler.Handle(appErr))
+			os.Exit(1)
 		}
 
 		targetPath := formData.ProjectPath
@@ -90,7 +98,9 @@ CI/CD пайплайнами и документацией.
 
 		// Validate template
 		if err := scaffolderInstance.ValidateTemplate("agent"); err != nil {
-			log.Fatal("Agent template validation failed", "error", err)
+			appErr := errorHandler.WrapTemplateError(err, "TEMPLATE_VALIDATION_FAILED", "Ошибка валидации шаблона агента")
+			fmt.Println(errorHandler.Handle(appErr))
+			os.Exit(1)
 		}
 
 		// Create project
@@ -99,7 +109,9 @@ CI/CD пайплайнами и документацией.
 			Render("Создание проекта..."))
 
 		if err := scaffolderInstance.CreateProjectWithOptions("agent", projectName, targetPath, cicdTypeStr, framework, options); err != nil {
-			log.Fatal("Failed to create agent project", "error", err)
+			appErr := errorHandler.WrapFileSystemError(err, "PROJECT_CREATION_FAILED", "Ошибка создания проекта агента")
+			fmt.Println(errorHandler.Handle(appErr))
+			os.Exit(1)
 		}
 
 		// Show success message

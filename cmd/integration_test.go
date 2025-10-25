@@ -144,7 +144,7 @@ func TestValidateCommand_WithExamples(t *testing.T) {
 			if !result.Valid {
 				t.Errorf("Example file %s is not valid:", file)
 				for _, validationError := range result.Errors {
-					t.Errorf("  %s: %s", validationError.Field, validationError.Message)
+					t.Errorf("  %s", validationError)
 				}
 			}
 		})
@@ -210,7 +210,7 @@ func TestValidateCommand_EdgeCases(t *testing.T) {
 				t.Errorf("Expected valid=%v, got valid=%v", tt.expectValid, result.Valid)
 				if !result.Valid {
 					for _, validationError := range result.Errors {
-						t.Logf("Validation error: %s - %s", validationError.Field, validationError.Message)
+						t.Logf("Validation error: %s", validationError)
 					}
 				}
 			}

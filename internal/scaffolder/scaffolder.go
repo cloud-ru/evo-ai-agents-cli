@@ -10,6 +10,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
 )
 
 // Use TemplatesFS from templates.go
@@ -70,7 +72,7 @@ func (s *Scaffolder) CreateProject(projectType, projectName, targetPath, cicdTyp
 
 	// Validate inputs
 	if err := s.validateInputs(projectType, projectName, targetPath); err != nil {
-		return fmt.Errorf("validation failed: %w", err)
+		return errors.Wrap(err, errors.ErrorTypeValidation, errors.SeverityMedium, "VALIDATION_FAILED", "Ошибка валидации входных данных")
 	}
 
 	// Prepare template data
@@ -87,12 +89,12 @@ func (s *Scaffolder) CreateProject(projectType, projectName, targetPath, cicdTyp
 
 	// Create target directory
 	if err := os.MkdirAll(targetPath, 0755); err != nil {
-		return fmt.Errorf("failed to create target directory: %w", err)
+		return errors.Wrap(err, errors.ErrorTypeFileSystem, errors.SeverityMedium, "DIRECTORY_CREATION_FAILED", "Ошибка создания директории")
 	}
 
 	// Process template files
 	if err := s.processTemplateFiles(templateDir, targetPath, data); err != nil {
-		return fmt.Errorf("failed to process templates: %w", err)
+		return errors.Wrap(err, errors.ErrorTypeTemplate, errors.SeverityMedium, "TEMPLATE_PROCESSING_FAILED", "Ошибка обработки шаблонов")
 	}
 
 	// log.Info("Project created successfully", "path", targetPath)
@@ -105,7 +107,7 @@ func (s *Scaffolder) CreateProjectWithOptions(projectType, projectName, targetPa
 
 	// Validate inputs
 	if err := s.validateInputs(projectType, projectName, targetPath); err != nil {
-		return fmt.Errorf("validation failed: %w", err)
+		return errors.Wrap(err, errors.ErrorTypeValidation, errors.SeverityMedium, "VALIDATION_FAILED", "Ошибка валидации входных данных")
 	}
 
 	// Prepare template data
@@ -129,12 +131,12 @@ func (s *Scaffolder) CreateProjectWithOptions(projectType, projectName, targetPa
 
 	// Create target directory
 	if err := os.MkdirAll(targetPath, 0755); err != nil {
-		return fmt.Errorf("failed to create target directory: %w", err)
+		return errors.Wrap(err, errors.ErrorTypeFileSystem, errors.SeverityMedium, "DIRECTORY_CREATION_FAILED", "Ошибка создания директории")
 	}
 
 	// Process template files
 	if err := s.processTemplateFiles(templateDir, targetPath, data); err != nil {
-		return fmt.Errorf("failed to process templates: %w", err)
+		return errors.Wrap(err, errors.ErrorTypeTemplate, errors.SeverityMedium, "TEMPLATE_PROCESSING_FAILED", "Ошибка обработки шаблонов")
 	}
 
 	// Apply additional options
@@ -217,9 +219,7 @@ func (s *Scaffolder) processFile(templatePath, targetPath, relPath string, data 
 	processedPath := s.processPath(relPath, data)
 
 	// Remove .tmpl extension from filename
-	if strings.HasSuffix(processedPath, ".tmpl") {
-		processedPath = strings.TrimSuffix(processedPath, ".tmpl")
-	}
+	processedPath = strings.TrimSuffix(processedPath, ".tmpl")
 
 	// Create target file path
 	targetFilePath := filepath.Join(targetPath, processedPath)

@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/api"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
 )
 
 // ShowAuthenticationError отображает ошибку аутентификации с ссылкой на документацию
@@ -87,41 +88,27 @@ func CheckAndDisplayError(err error) string {
 	if authErr, ok := err.(*api.AuthenticationError); ok {
 		return ShowAuthenticationError(authErr)
 	}
-	return ShowGenericError(err)
+	
+	// Используем новую систему ошибок
+	return errors.FormatError(err)
 }
 
 // FormatSuccess форматирует сообщение об успехе
 func FormatSuccess(message string) string {
-	style := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("2")).
-		Bold(true)
-
-	return style.Render("✅ " + message)
+	return errors.FormatSuccess(message)
 }
 
 // FormatError форматирует сообщение об ошибке
 func FormatError(message string) string {
-	style := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("1")).
-		Bold(true)
-
-	return style.Render("❌ " + message)
+	return errors.FormatError(fmt.Errorf("%s", message))
 }
 
 // FormatInfo форматирует информационное сообщение
 func FormatInfo(message string) string {
-	style := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("39")).
-		Bold(true)
-
-	return style.Render("ℹ️ " + message)
+	return errors.FormatInfo(message)
 }
 
 // FormatWarning форматирует предупреждение
 func FormatWarning(message string) string {
-	style := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("214")).
-		Bold(true)
-
-	return style.Render("⚠️ " + message)
+	return errors.FormatWarning(message)
 }

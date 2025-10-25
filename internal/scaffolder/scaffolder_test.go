@@ -147,12 +147,11 @@ func TestCreateProjectValidation(t *testing.T) {
 func TestProcessTemplate(t *testing.T) {
 	scaffolder := NewScaffolder()
 	data := &ProjectData{
-		ProjectName:   "test-project",
-		ProjectType:   "mcp",
-		Author:        "Test Author",
-		Year:          "2024",
-		PythonVersion: "3.9",
-		CICDType:      "both",
+		ProjectName: "test-project",
+		ProjectType: "mcp",
+		Author:      "Test Author",
+		Year:        "2024",
+		CICDType:    "both",
 	}
 
 	// Test template processing

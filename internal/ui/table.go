@@ -536,7 +536,7 @@ func RenderAgentDetails(agent *api.Agent, ctx context.Context, container *di.Con
 		result += fmt.Sprintf("\n%s\n", tabStyle.Render("📡 Подключенные серверы:"))
 		for i, mcp := range agent.MCPServers {
 			result += fmt.Sprintf("  %d. %s (%s) - %s\n", i+1, mcp.Name, mcp.ID, mcp.Status)
-			if mcp.Source != nil && len(mcp.Source) > 0 {
+			if len(mcp.Source) > 0 {
 				for key, value := range mcp.Source {
 					result += fmt.Sprintf("     %s: %v\n", labelStyle.Render("Источник"), valueStyle.Render(fmt.Sprintf("%s: %v", key, value)))
 				}
