@@ -53,6 +53,7 @@ type AppError struct {
 	Context   map[string]interface{} `json:"context,omitempty"`
 	Timestamp time.Time              `json:"timestamp"`
 	Original  error                  `json:"-"`
+	Suggestions []string             `json:"suggestions,omitempty"`
 }
 
 // Error реализует интерфейс error
@@ -88,6 +89,12 @@ func (e *AppError) WithContext(key string, value interface{}) *AppError {
 // WithDetails добавляет детали к ошибке
 func (e *AppError) WithDetails(details string) *AppError {
 	e.Details = details
+	return e
+}
+
+// WithSuggestions добавляет подсказки к ошибке
+func (e *AppError) WithSuggestions(suggestions ...string) *AppError {
+	e.Suggestions = suggestions
 	return e
 }
 

@@ -218,6 +218,14 @@ func formatSimpleAppError(err *AppError) string {
 		parts = append(parts, UIStyles.ErrorDetails.Render(fmt.Sprintf("Причина: %v", err.Original)))
 	}
 
+	// Подсказки
+	if len(err.Suggestions) > 0 {
+		parts = append(parts, UIStyles.ErrorTitle.Render("💡 Что можно сделать:"))
+		for i, suggestion := range err.Suggestions {
+			parts = append(parts, UIStyles.ErrorDetails.Render(fmt.Sprintf("  %d. %s", i+1, suggestion)))
+		}
+	}
+
 	return strings.Join(parts, "\n")
 }
 
@@ -268,6 +276,14 @@ func formatPlainAppError(err *AppError) string {
 	// Оригинальная ошибка
 	if err.Original != nil {
 		parts = append(parts, fmt.Sprintf("Причина: %v", err.Original))
+	}
+
+	// Подсказки
+	if len(err.Suggestions) > 0 {
+		parts = append(parts, "\n💡 Что можно сделать:")
+		for i, suggestion := range err.Suggestions {
+			parts = append(parts, fmt.Sprintf("  %d. %s", i+1, suggestion))
+		}
 	}
 
 	return strings.Join(parts, "\n")

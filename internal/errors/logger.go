@@ -20,9 +20,9 @@ func NewLogger() *Logger {
 	// Настраиваем логгер
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.InfoLevel)
-	logger.SetFormatter(log.JSONFormatter)
-	logger.SetReportTimestamp(true)
-	logger.SetReportCaller(true)
+	logger.SetFormatter(log.TextFormatter)
+	logger.SetReportTimestamp(false)
+	logger.SetReportCaller(false)
 
 	return &Logger{
 		Logger:  logger,
@@ -84,26 +84,18 @@ func (l *Logger) LogError(err error, message string, fields ...interface{}) {
 	// Определяем уровень логирования на основе типа ошибки
 	level := l.getLogLevel(err)
 	
-	// Подготавливаем поля для логирования
-	logFields := append([]interface{}{"error", err}, fields...)
-	
-	// Добавляем контекст
-	for k, v := range l.context {
-		logFields = append(logFields, k, v)
-	}
-
-	// Логируем с соответствующим уровнем
+	// Логируем только основное сообщение
 	switch level {
 	case log.DebugLevel:
-		l.Debug(message, logFields...)
+		l.Debug(message)
 	case log.InfoLevel:
-		l.Info(message, logFields...)
+		l.Info(message)
 	case log.WarnLevel:
-		l.Warn(message, logFields...)
+		l.Warn(message)
 	case log.ErrorLevel:
-		l.Error(message, logFields...)
+		l.Error(message)
 	case log.FatalLevel:
-		l.Fatal(message, logFields...)
+		l.Fatal(message)
 	}
 }
 
@@ -113,47 +105,21 @@ func (l *Logger) LogAppError(err *AppError, message string, fields ...interface{
 		return
 	}
 
-	// Подготавливаем поля
-	logFields := []interface{}{
-		"error_type", string(err.Type),
-		"error_severity", string(err.Severity),
-		"error_code", err.Code,
-		"error_message", err.Message,
-	}
-	
-	if err.Details != "" {
-		logFields = append(logFields, "error_details", err.Details)
-	}
-	
-	if len(err.Context) > 0 {
-		logFields = append(logFields, "error_context", err.Context)
-	}
-	
-	if err.Original != nil {
-		logFields = append(logFields, "original_error", err.Original.Error())
-	}
-	
-	// Добавляем дополнительные поля
-	logFields = append(logFields, fields...)
-	
-	// Добавляем контекст логгера
-	for k, v := range l.context {
-		logFields = append(logFields, k, v)
-	}
-
-	// Логируем с соответствующим уровнем
+	// Простое логирование без избыточных полей
 	level := l.getSeverityLevel(err.Severity)
+	
+	// Логируем только основное сообщение
 	switch level {
 	case log.DebugLevel:
-		l.Debug(message, logFields...)
+		l.Debug(message)
 	case log.InfoLevel:
-		l.Info(message, logFields...)
+		l.Info(message)
 	case log.WarnLevel:
-		l.Warn(message, logFields...)
+		l.Warn(message)
 	case log.ErrorLevel:
-		l.Error(message, logFields...)
+		l.Error(message)
 	case log.FatalLevel:
-		l.Fatal(message, logFields...)
+		l.Fatal(message)
 	}
 }
 
