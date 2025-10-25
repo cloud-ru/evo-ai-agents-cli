@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
@@ -51,7 +52,7 @@ var getCmd = &cobra.Command{
 		if err != nil {
 			appErr := errorHandler.WrapAPIError(err, "MCP_SERVER_GET_FAILED", "Ошибка получения MCP сервера")
 			appErr = appErr.WithSuggestions(
-				"Проверьте правильность ID сервера: " + serverID,
+				"Проверьте правильность ID сервера: "+serverID,
 				"Убедитесь что сервер существует: ai-agents-cli mcp-servers list",
 				"Проверьте переменные окружения: IAM_KEY_ID, IAM_SECRET_KEY, IAM_ENDPOINT",
 				"Убедитесь что вы авторизованы: ai-agents-cli auth login",
