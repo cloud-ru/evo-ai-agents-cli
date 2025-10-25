@@ -2,7 +2,6 @@ package agent
 
 import (
 	"github.com/charmbracelet/log"
-	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -42,14 +41,6 @@ AI агенты - это интеллектуальные помощники, к
 
 func init() {
 	log.Debug("Инициализация команды агентов")
-
-	// Инициализируем DI контейнер
-	container := di.GetContainer()
-
-	// Получаем API клиент из контейнера (для инициализации)
-	_ = container.GetAPI()
-
-	log.Debug("Команда агентов инициализирована успешно")
 
 	// Добавляем подкоманды
 	RootCMD.AddCommand(listCmd)

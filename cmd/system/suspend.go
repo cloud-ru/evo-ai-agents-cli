@@ -21,11 +21,14 @@ var suspendCmd = &cobra.Command{
 
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
-		apiClient := container.GetAPI()
+		apiClient, err := container.GetAPI()
+		if err != nil {
+			log.Fatal("Failed to get API client", "error", err)
+		}
 
 		// Приостанавливаем работу системы
-		err := apiClient.AgentSystems.Suspend(ctx, systemID)
-		if err != nil {
+
+		if err := apiClient.AgentSystems.Suspend(ctx, systemID); err != nil {
 			log.Fatal("Failed to suspend system", "error", err, "system_id", systemID)
 		}
 

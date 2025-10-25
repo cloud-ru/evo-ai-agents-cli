@@ -48,11 +48,11 @@ func TestLoad(t *testing.T) {
 		{
 			name: "valid config with all required fields",
 			envVars: map[string]string{
-				"IAM_KEY_ID":           "test-key-id",
-				"IAM_SECRET":           "test-secret",
-				"IAM_ENDPOINT":         "https://iam.test.com",
-				"PROJECT_ID":           "test-project",
-				"PUBLIC_API_ENDPOINT":  "https://api.test.com",
+				"IAM_KEY_ID":          "test-key-id",
+				"IAM_SECRET":          "test-secret",
+				"IAM_ENDPOINT":        "https://iam.test.com",
+				"PROJECT_ID":          "test-project",
+				"PUBLIC_API_ENDPOINT": "https://api.test.com",
 			},
 			expectError: false,
 			expectedConfig: &Config{
@@ -66,9 +66,9 @@ func TestLoad(t *testing.T) {
 		{
 			name: "config with default values",
 			envVars: map[string]string{
-				"IAM_KEY_ID":  "test-key-id",
-				"IAM_SECRET":  "test-secret",
-				"PROJECT_ID":  "test-project",
+				"IAM_KEY_ID": "test-key-id",
+				"IAM_SECRET": "test-secret",
+				"PROJECT_ID": "test-project",
 			},
 			expectError: false,
 			expectedConfig: &Config{

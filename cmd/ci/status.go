@@ -67,8 +67,12 @@ var statusCmd = &cobra.Command{
 }
 
 func checkMCPServerStatus(ctx context.Context, serverID string) {
+	// Инициализируем DI контейнер
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		log.Fatal("Failed to get API client", "error", err)
+	}
 
 	server, err := apiClient.MCPServers.Get(ctx, serverID)
 	if err != nil {
@@ -80,7 +84,10 @@ func checkMCPServerStatus(ctx context.Context, serverID string) {
 
 func checkAgentStatus(ctx context.Context, agentID string) {
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		log.Fatal("Failed to get API client", "error", err)
+	}
 
 	agent, err := apiClient.Agents.Get(ctx, agentID)
 	if err != nil {
@@ -92,7 +99,10 @@ func checkAgentStatus(ctx context.Context, agentID string) {
 
 func checkAgentSystemStatus(ctx context.Context, systemID string) {
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		log.Fatal("Failed to get API client", "error", err)
+	}
 
 	system, err := apiClient.AgentSystems.Get(ctx, systemID)
 	if err != nil {
@@ -104,7 +114,10 @@ func checkAgentSystemStatus(ctx context.Context, systemID string) {
 
 func checkAllMCPServersStatus(ctx context.Context) {
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		log.Fatal("Failed to get API client", "error", err)
+	}
 
 	servers, err := apiClient.MCPServers.List(ctx, 100, 0)
 	if err != nil {
@@ -116,7 +129,10 @@ func checkAllMCPServersStatus(ctx context.Context) {
 
 func checkAllAgentsStatus(ctx context.Context) {
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		log.Fatal("Failed to get API client", "error", err)
+	}
 
 	agents, err := apiClient.Agents.List(ctx, 100, 0)
 	if err != nil {
@@ -128,7 +144,10 @@ func checkAllAgentsStatus(ctx context.Context) {
 
 func checkAllAgentSystemsStatus(ctx context.Context) {
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		log.Fatal("Failed to get API client", "error", err)
+	}
 
 	systems, err := apiClient.AgentSystems.List(ctx, 100, 0)
 	if err != nil {
@@ -140,7 +159,10 @@ func checkAllAgentSystemsStatus(ctx context.Context) {
 
 func checkOverallStatus(ctx context.Context) {
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		log.Fatal("Failed to get API client", "error", err)
+	}
 
 	// Получаем статус всех ресурсов
 	servers, err := apiClient.MCPServers.List(ctx, 100, 0)

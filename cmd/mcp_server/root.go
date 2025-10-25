@@ -2,7 +2,6 @@ package mcp_server
 
 import (
 	"github.com/charmbracelet/log"
-	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -43,14 +42,6 @@ MCP серверы предоставляют контекст и инструм
 
 func init() {
 	log.Debug("Инициализация MCP серверов команды")
-
-	// Инициализируем DI контейнер
-	container := di.GetContainer()
-
-	// Получаем API клиент из контейнера (для инициализации)
-	_ = container.GetAPI()
-
-	log.Debug("MCP серверы команда инициализирована успешно")
 
 	// Добавляем подкоманды
 	RootCMD.AddCommand(listCmd)

@@ -1,0 +1,241 @@
+"""
+{{.ProjectName}} - AI Agent using LangGraph Framework
+
+Этот модуль содержит основной агент, созданный с использованием LangGraph.
+"""
+
+import asyncio
+import logging
+from typing import Any, Dict, List, Optional, TypedDict
+
+from langgraph import StateGraph, END
+from langgraph.graph import StateGraph, END
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class AgentState(TypedDict):
+    """Состояние агента"""
+    messages: List[BaseMessage]
+    user_input: str
+    agent_response: str
+    context: Dict[str, Any]
+    step_count: int
+
+
+class {{.ProjectName | Title}}Agent:
+    """
+    {{.ProjectName}} AI Agent using LangGraph
+    
+    Основной агент для {{.Description}}
+    """
+    
+    def __init__(self):
+        self.llm = ChatOpenAI(
+            model="gpt-4",
+            temperature=0.7,
+            max_tokens=1000
+        )
+        self.graph = self._build_graph()
+        self.app = self.graph.compile()
+    
+    def _build_graph(self) -> StateGraph:
+        """Построение графа агента"""
+        graph = StateGraph(AgentState)
+        
+        # Добавление узлов
+        graph.add_node("receive_input", self._receive_input)
+        graph.add_node("process_message", self._process_message)
+        graph.add_node("generate_response", self._generate_response)
+        graph.add_node("update_context", self._update_context)
+        
+        # Добавление связей
+        graph.add_edge("receive_input", "process_message")
+        graph.add_edge("process_message", "generate_response")
+        graph.add_edge("generate_response", "update_context")
+        graph.add_edge("update_context", END)
+        
+        # Установка точки входа
+        graph.set_entry_point("receive_input")
+        
+        return graph
+    
+    def _receive_input(self, state: AgentState) -> AgentState:
+        """Получение и обработка входящего сообщения"""
+        logger.info(f"Получено сообщение: {state['user_input']}")
+        
+        # Добавление сообщения пользователя
+        state["messages"].append(HumanMessage(content=state["user_input"]))
+        state["step_count"] = state.get("step_count", 0) + 1
+        
+        return state
+    
+    def _process_message(self, state: AgentState) -> AgentState:
+        """Обработка сообщения и извлечение контекста"""
+        user_input = state["user_input"]
+        
+        # Простая обработка для примера
+        if "привет" in user_input.lower():
+            state["context"]["greeting"] = True
+        elif "помощь" in user_input.lower():
+            state["context"]["help_requested"] = True
+        else:
+            state["context"]["general_query"] = True
+        
+        logger.info(f"Обработан контекст: {state['context']}")
+        return state
+    
+    def _generate_response(self, state: AgentState) -> AgentState:
+        """Генерация ответа с использованием LLM"""
+        try:
+            # Создание промпта
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", self._get_system_prompt()),
+                ("human", "{user_input}")
+            ])
+            
+            # Генерация ответа
+            chain = prompt | self.llm
+            response = chain.invoke({"user_input": state["user_input"]})
+            
+            state["agent_response"] = response.content
+            state["messages"].append(AIMessage(content=response.content))
+            
+            logger.info(f"Сгенерирован ответ: {response.content}")
+            
+        except Exception as e:
+            logger.error(f"Ошибка при генерации ответа: {e}")
+            state["agent_response"] = "Извините, произошла ошибка при обработке вашего запроса."
+        
+        return state
+    
+    def _update_context(self, state: AgentState) -> AgentState:
+        """Обновление контекста агента"""
+        # Обновление контекста на основе ответа
+        state["context"]["last_response"] = state["agent_response"]
+        state["context"]["conversation_length"] = len(state["messages"])
+        
+        logger.info(f"Обновлен контекст: {state['context']}")
+        return state
+    
+    def _get_system_prompt(self) -> str:
+        """Получить системный промпт для агента"""
+        return f"""
+Ты {{.ProjectName}} - AI агент, созданный с использованием LangGraph.
+
+Твоя задача: {{{{.Description}}}}
+
+Ты должен:
+1. Быть полезным и информативным
+2. Отвечать на вопросы пользователя
+3. Предоставлять помощь и поддержку
+4. Быть вежливым и профессиональным
+
+Если пользователь просит помощь, покажи доступные команды и функции.
+"""
+    
+    async def process_message(self, user_input: str) -> str:
+        """
+        Обработка сообщения пользователя
+        
+        Args:
+            user_input: Сообщение пользователя
+            
+        Returns:
+            Ответ агента
+        """
+        try:
+            # Создание начального состояния
+            initial_state = AgentState(
+                messages=[],
+                user_input=user_input,
+                agent_response="",
+                context={},
+                step_count=0
+            )
+            
+            # Выполнение графа
+            result = await self.app.ainvoke(initial_state)
+            
+            return result["agent_response"]
+            
+        except Exception as e:
+            logger.error(f"Ошибка при обработке сообщения: {e}")
+            return "Извините, произошла ошибка при обработке вашего запроса."
+    
+    async def get_help(self) -> str:
+        """Получить справку по командам"""
+        return """
+Доступные функции {{.ProjectName}} агента:
+
+🤖 Основные возможности:
+- Обработка текстовых сообщений
+- Генерация ответов с использованием LLM
+- Управление состоянием разговора
+- Контекстная обработка запросов
+
+💬 Команды:
+- "привет" - приветствие
+- "помощь" - показать эту справку
+- Любой вопрос - получить ответ от агента
+
+🔧 Технические детали:
+- Фреймворк: LangGraph
+- LLM: GPT-4
+- Управление состоянием: Встроенное
+- Контекст: Сохраняется между сообщениями
+"""
+    
+    async def get_status(self) -> Dict[str, Any]:
+        """Получить статус агента"""
+        return {
+            "agent_name": "{{.ProjectName}}",
+            "framework": "LangGraph",
+            "status": "Активен",
+            "llm_model": "gpt-4",
+            "capabilities": [
+                "Обработка сообщений",
+                "Генерация ответов",
+                "Управление состоянием",
+                "Контекстная обработка"
+            ]
+        }
+
+
+async def main():
+    """Основная функция для тестирования агента"""
+    agent = {{.ProjectName | Title}}Agent()
+    
+    print("🤖 {{.ProjectName}} Agent запущен!")
+    print("Введите 'выход' для завершения")
+    print("Введите 'помощь' для справки")
+    print("-" * 50)
+    
+    while True:
+        try:
+            user_input = input("\n👤 Вы: ")
+            
+            if user_input.lower() in ['выход', 'exit', 'quit']:
+                print("👋 До свидания!")
+                break
+            elif user_input.lower() in ['помощь', 'help']:
+                help_text = await agent.get_help()
+                print(f"\n🤖 Агент:\n{help_text}")
+            else:
+                response = await agent.process_message(user_input)
+                print(f"\n🤖 Агент: {response}")
+                
+        except KeyboardInterrupt:
+            print("\n👋 До свидания!")
+            break
+        except Exception as e:
+            print(f"❌ Ошибка: {e}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

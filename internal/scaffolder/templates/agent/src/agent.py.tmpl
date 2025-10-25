@@ -1,0 +1,245 @@
+"""
+{{.ProjectName}} - AI Agent Main Module
+
+This module implements an AI agent for task automation and intelligent processing.
+"""
+
+import asyncio
+import logging
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, BaseSettings
+from rich.console import Console
+from rich.logging import RichHandler
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        RichHandler(console=Console(stderr=True), rich_tracebacks=True),
+    ],
+)
+
+logger = logging.getLogger(__name__)
+
+
+class Settings(BaseSettings):
+    """Application settings."""
+    
+    app_name: str = "{{.ProjectName}}"
+    app_version: str = "1.0.0"
+    app_env: str = "development"
+    debug: bool = True
+    log_level: str = "INFO"
+    
+    host: str = "0.0.0.0"
+    port: int = 8000
+    
+    # Agent settings
+    agent_name: str = "{{.ProjectName}}"
+    agent_description: str = "AI agent for {{.ProjectName}}"
+    agent_version: str = "1.0.0"
+    
+    # AI API settings
+    openai_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+    
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+
+# Global settings instance
+settings = Settings()
+
+# FastAPI app
+app = FastAPI(
+    title=settings.app_name,
+    version=settings.app_version,
+    description="AI agent for task automation and intelligent processing",
+    debug=settings.debug,
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"] if settings.debug else [],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class TaskRequest(BaseModel):
+    """Request model for agent tasks."""
+    task_type: str
+    input_data: Dict[str, Any]
+    parameters: Optional[Dict[str, Any]] = None
+
+
+class TaskResponse(BaseModel):
+    """Response model for agent tasks."""
+    task_id: str
+    status: str
+    result: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
+class AIAgent:
+    """AI Agent implementation."""
+    
+    def __init__(self, name: str, description: str):
+        self.name = name
+        self.description = description
+        self.capabilities = [
+            "text_processing",
+            "task_automation", 
+            "decision_making",
+            "data_analysis"
+        ]
+    
+    async def process_task(self, task_request: TaskRequest) -> TaskResponse:
+        """Process a task with the AI agent."""
+        try:
+            logger.info(f"Processing task: {task_request.task_type}")
+            
+            # TODO: Implement actual AI processing logic
+            # This is a placeholder implementation
+            
+            if task_request.task_type == "text_analysis":
+                result = await self._analyze_text(task_request.input_data)
+            elif task_request.task_type == "data_processing":
+                result = await self._process_data(task_request.input_data)
+            elif task_request.task_type == "decision_making":
+                result = await self._make_decision(task_request.input_data)
+            else:
+                result = {"message": f"Task type '{task_request.task_type}' not implemented"}
+            
+            return TaskResponse(
+                task_id=f"task_{asyncio.get_event_loop().time()}",
+                status="completed",
+                result=result
+            )
+            
+        except Exception as e:
+            logger.error(f"Task processing failed: {e}")
+            return TaskResponse(
+                task_id=f"task_{asyncio.get_event_loop().time()}",
+                status="failed",
+                error=str(e)
+            )
+    
+    async def _analyze_text(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze text data."""
+        text = input_data.get("text", "")
+        return {
+            "analysis": f"Analyzed text: {text[:100]}...",
+            "word_count": len(text.split()),
+            "sentiment": "positive"  # Placeholder
+        }
+    
+    async def _process_data(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process structured data."""
+        data = input_data.get("data", {})
+        return {
+            "processed": True,
+            "record_count": len(data) if isinstance(data, list) else 1,
+            "summary": "Data processed successfully"
+        }
+    
+    async def _make_decision(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Make a decision based on input."""
+        context = input_data.get("context", "")
+        return {
+            "decision": "proceed",  # Placeholder
+            "confidence": 0.85,
+            "reasoning": f"Based on context: {context[:50]}..."
+        }
+
+
+# Initialize agent
+agent = AIAgent(settings.agent_name, settings.agent_description)
+
+
+@app.get("/")
+async def root():
+    """Root endpoint."""
+    return {
+        "message": f"Welcome to {settings.app_name}",
+        "version": settings.app_version,
+        "status": "running"
+    }
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint."""
+    return {
+        "status": "healthy",
+        "service": settings.app_name,
+        "version": settings.app_version
+    }
+
+
+@app.get("/agent/status")
+async def agent_status():
+    """Get agent status."""
+    return {
+        "name": agent.name,
+        "description": agent.description,
+        "version": settings.agent_version,
+        "status": "active",
+        "capabilities": agent.capabilities
+    }
+
+
+@app.post("/agent/process", response_model=TaskResponse)
+async def process_task(request: TaskRequest):
+    """Process a task with the AI agent."""
+    return await agent.process_task(request)
+
+
+@app.get("/agent/capabilities")
+async def get_capabilities():
+    """Get agent capabilities."""
+    return {
+        "capabilities": agent.capabilities,
+        "supported_tasks": [
+            "text_analysis",
+            "data_processing", 
+            "decision_making"
+        ]
+    }
+
+
+def main():
+    """Main entry point."""
+    logger.info(f"Starting {settings.app_name} v{settings.app_version}")
+    logger.info(f"Environment: {settings.app_env}")
+    logger.info(f"Debug mode: {settings.debug}")
+    logger.info(f"Agent: {agent.name}")
+    
+    try:
+        uvicorn.run(
+            "agent:app",
+            host=settings.host,
+            port=settings.port,
+            reload=settings.debug,
+            log_level=settings.log_level.lower(),
+            access_log=True,
+        )
+    except KeyboardInterrupt:
+        logger.info("Shutting down...")
+    except Exception as e:
+        logger.error(f"Failed to start server: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

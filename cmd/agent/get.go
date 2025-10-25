@@ -29,7 +29,10 @@ var getCmd = &cobra.Command{
 
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
-		apiClient := container.GetAPI()
+		apiClient, err := container.GetAPI()
+		if err != nil {
+			log.Fatal("Failed to get API client", "error", err)
+		}
 
 		// Получаем информацию об агенте
 		agent, err := apiClient.Agents.Get(ctx, agentID)
@@ -68,13 +71,19 @@ func getCreatedByInfo(ctx context.Context, container *di.Container, userID strin
 		return "Не указан"
 	}
 
-	config := container.GetConfig()
+	config, err := container.GetConfig()
+	if err != nil {
+		return fmt.Sprintf("ID: %s (ошибка получения конфигурации)", userID)
+	}
 	if config.CustomerID == "" {
 		// Если нет customerID, возвращаем ID с пояснением
 		return fmt.Sprintf("ID: %s (CUSTOMER_ID не указан)", userID)
 	}
 
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		return fmt.Sprintf("ID: %s (ошибка получения API клиента)", userID)
+	}
 	user, err := apiClient.Users.Get(ctx, config.CustomerID, userID)
 	if err != nil {
 		// При ошибке API тоже показываем ID
@@ -90,13 +99,19 @@ func getUpdatedByInfo(ctx context.Context, container *di.Container, userID strin
 		return "Не указан"
 	}
 
-	config := container.GetConfig()
+	config, err := container.GetConfig()
+	if err != nil {
+		return fmt.Sprintf("ID: %s (ошибка получения конфигурации)", userID)
+	}
 	if config.CustomerID == "" {
 		// Если нет customerID, возвращаем ID с пояснением
 		return fmt.Sprintf("ID: %s (CUSTOMER_ID не указан)", userID)
 	}
 
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		return fmt.Sprintf("ID: %s (ошибка получения API клиента)", userID)
+	}
 	user, err := apiClient.Users.Get(ctx, config.CustomerID, userID)
 	if err != nil {
 		// При ошибке API тоже показываем ID

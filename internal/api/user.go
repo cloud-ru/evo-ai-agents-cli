@@ -33,4 +33,3 @@ func (s *UserService) GetByEmail(ctx context.Context, customerID, email string) 
 	err := s.client.Get(ctx, path, query, &result)
 	return &result, err
 }
-

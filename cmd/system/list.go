@@ -26,7 +26,10 @@ var listCmd = &cobra.Command{
 
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
-		apiClient := container.GetAPI()
+		apiClient, err := container.GetAPI()
+		if err != nil {
+			log.Fatal("Failed to get API client", "error", err)
+		}
 
 		if systemOutputFormat == "json" {
 			// Выводим в JSON формате
@@ -41,8 +44,8 @@ var listCmd = &cobra.Command{
 		}
 
 		// Показываем интерактивную таблицу
-		err := ui.ShowAgentSystemsListFromAPI(ctx, systemLimit, systemOffset)
-		if err != nil {
+
+		if err = ui.ShowAgentSystemsListFromAPI(ctx, systemLimit, systemOffset); err != nil {
 			log.Fatal("Failed to show systems table", "error", err)
 		}
 	},

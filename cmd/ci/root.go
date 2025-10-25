@@ -2,7 +2,6 @@ package ci
 
 import (
 	"github.com/charmbracelet/log"
-	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
 	"github.com/spf13/cobra"
 )
 
@@ -39,14 +38,6 @@ var RootCMD = &cobra.Command{
 
 func init() {
 	log.Debug("Инициализация команды CI/CD")
-
-	// Инициализируем DI контейнер
-	container := di.GetContainer()
-
-	// Получаем API клиент из контейнера (для инициализации)
-	_ = container.GetAPI()
-
-	log.Debug("Команда CI/CD инициализирована успешно")
 
 	// Добавляем подкоманды
 	RootCMD.AddCommand(statusCmd)

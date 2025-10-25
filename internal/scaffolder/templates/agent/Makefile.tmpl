@@ -1,0 +1,110 @@
+# {{.ProjectName}} Makefile
+
+# Переменные
+PROJECT_NAME={{.ProjectName}}
+PYTHON_VERSION=3.9
+DOCKER_IMAGE=$(PROJECT_NAME):latest
+DOCKER_TAG=latest
+
+# Цвета для вывода
+GREEN=\033[0;32m
+YELLOW=\033[1;33m
+RED=\033[0;31m
+NC=\033[0m # No Color
+
+.PHONY: help install test lint run clean docker-build docker-run docker-stop
+
+# Помощь
+help: ## Показать справку
+	@echo "$(GREEN)$(PROJECT_NAME) - Makefile$(NC)"
+	@echo ""
+	@echo "$(YELLOW)Доступные команды:$(NC)"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(GREEN)%-15s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+# Установка зависимостей
+install: ## Установить зависимости
+	@echo "$(YELLOW)Установка зависимостей...$(NC)"
+	pip install -r requirements.txt
+	@echo "$(GREEN)✅ Зависимости установлены$(NC)"
+
+# Установка зависимостей для разработки
+install-dev: ## Установить зависимости для разработки
+	@echo "$(YELLOW)Установка зависимостей для разработки...$(NC)"
+	pip install -r requirements.txt
+	pip install pytest pytest-cov black flake8 mypy
+	@echo "$(GREEN)✅ Зависимости для разработки установлены$(NC)"
+
+# Тестирование
+test: ## Запустить тесты
+	@echo "$(YELLOW)Запуск тестов...$(NC)"
+	pytest tests/ -v
+	@echo "$(GREEN)✅ Тесты завершены$(NC)"
+
+# Тестирование с покрытием
+test-coverage: ## Запустить тесты с покрытием
+	@echo "$(YELLOW)Запуск тестов с покрытием...$(NC)"
+	pytest --cov=src --cov-report=html --cov-report=term tests/
+	@echo "$(GREEN)✅ Отчет о покрытии создан: htmlcov/index.html$(NC)"
+
+# Линтинг
+lint: ## Запустить линтер
+	@echo "$(YELLOW)Запуск линтера...$(NC)"
+	flake8 src/ tests/
+	black --check src/ tests/
+	mypy src/
+	@echo "$(GREEN)✅ Линтинг завершен$(NC)"
+
+# Форматирование кода
+fmt: ## Форматировать код
+	@echo "$(YELLOW)Форматирование кода...$(NC)"
+	black src/ tests/
+	@echo "$(GREEN)✅ Форматирование завершено$(NC)"
+
+# Запуск приложения
+run: ## Запустить приложение
+	@echo "$(YELLOW)Запуск $(PROJECT_NAME)...$(NC)"
+	python src/main.py
+
+# Очистка
+clean: ## Очистить временные файлы
+	@echo "$(YELLOW)Очистка...$(NC)"
+	find . -type f -name "*.pyc" -delete
+	find . -type d -name "__pycache__" -delete
+	find . -type d -name "*.egg-info" -exec rm -rf {} +
+	rm -rf build/
+	rm -rf dist/
+	rm -rf htmlcov/
+	rm -rf .coverage
+	rm -rf .pytest_cache/
+	@echo "$(GREEN)✅ Очистка завершена$(NC)"
+
+# Docker сборка
+docker-build: ## Собрать Docker образ
+	@echo "$(YELLOW)Сборка Docker образа...$(NC)"
+	docker build -t $(DOCKER_IMAGE) .
+	@echo "$(GREEN)✅ Docker образ собран: $(DOCKER_IMAGE)$(NC)"
+
+# Docker запуск
+docker-run: ## Запустить в Docker
+	@echo "$(YELLOW)Запуск в Docker...$(NC)"
+	docker-compose up -d
+	@echo "$(GREEN)✅ Приложение запущено в Docker$(NC)"
+
+# Docker остановка
+docker-stop: ## Остановить Docker контейнеры
+	@echo "$(YELLOW)Остановка Docker контейнеров...$(NC)"
+	docker-compose down
+	@echo "$(GREEN)✅ Docker контейнеры остановлены$(NC)"
+
+# Проверка перед коммитом
+pre-commit: fmt lint test ## Выполнить все проверки перед коммитом
+	@echo "$(GREEN)✅ Все проверки пройдены$(NC)"
+
+# Показать версию
+version: ## Показать версию
+	@echo "$(GREEN)Проект: $(PROJECT_NAME)$(NC)"
+	@echo "$(GREEN)Python: $(shell python --version)$(NC)"
+	@echo "$(GREEN)Docker: $(shell docker --version)$(NC)"
+
+# По умолчанию
+.DEFAULT_GOAL := help

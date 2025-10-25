@@ -23,10 +23,12 @@ var suspendCmd = &cobra.Command{
 		// Приостанавливаем работу MCP сервера
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
-		apiClient := container.GetAPI()
-
-		err := apiClient.MCPServers.Suspend(ctx, serverID)
+		apiClient, err := container.GetAPI()
 		if err != nil {
+			log.Fatal("Failed to get API client", "error", err)
+		}
+
+		if err := apiClient.MCPServers.Suspend(ctx, serverID); err != nil {
 			log.Fatal("Failed to suspend MCP server", "error", err, "server_id", serverID)
 		}
 

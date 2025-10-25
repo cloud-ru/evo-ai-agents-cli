@@ -55,7 +55,10 @@ var deployCmd = &cobra.Command{
 
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
-		apiClient := container.GetAPI()
+		apiClient, err := container.GetAPI()
+	if err != nil {
+		log.Fatal("Failed to get API client", "error", err)
+	}
 
 		// Создаем деплойер
 		mcpDeployer := deployer.NewMCPDeployer(apiClient)

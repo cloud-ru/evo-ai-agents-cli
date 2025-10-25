@@ -21,11 +21,14 @@ var resumeCmd = &cobra.Command{
 
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
-		apiClient := container.GetAPI()
+		apiClient, err := container.GetAPI()
+		if err != nil {
+			log.Fatal("Failed to get API client", "error", err)
+		}
 
 		// Возобновляем работу системы
-		err := apiClient.AgentSystems.Resume(ctx, systemID)
-		if err != nil {
+
+		if err := apiClient.AgentSystems.Resume(ctx, systemID); err != nil {
 			log.Fatal("Failed to resume system", "error", err, "system_id", systemID)
 		}
 

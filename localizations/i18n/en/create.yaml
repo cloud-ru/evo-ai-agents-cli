@@ -1,0 +1,69 @@
+create:
+  short: "Create projects from templates"
+  long: |
+    Create new MCP server and AI agent projects from ready-made templates.
+    
+    Project creation commands:
+    • mcp [project-name] - Create MCP server project
+    • agent [project-name] - Create AI agent project
+    
+    Each template includes:
+    • Complete Python project structure
+    • Dockerfile and docker-compose.yml
+    • CI/CD configurations (GitLab CI and GitHub Actions)
+    • Makefile with development commands
+    • README.md with documentation
+    • .gitignore, .editorconfig, LICENSE
+    • Basic dependencies and settings
+
+mcp:
+  short: "Create new MCP server project from template"
+  long: |
+    Creates a new MCP (Model Context Protocol) server project from a ready template.
+    
+    MCP server allows integrating external tools and resources with AI agents.
+    Template includes complete Python project structure with FastAPI, Docker configuration,
+    CI/CD pipelines and documentation.
+    
+    Usage examples:
+      ai-agents-cli create mcp my-mcp-server
+      ai-agents-cli create mcp database-mcp --path ./projects/
+
+agent:
+  short: "Create new AI agent project from template"
+  long: |
+    Creates a new AI agent project from a ready template.
+    
+    AI agent is designed for task automation and intelligent data processing.
+    Template includes complete Python project structure with FastAPI, Docker configuration,
+    CI/CD pipelines and documentation.
+    
+    Usage examples:
+      ai-agents-cli create agent my-ai-agent
+      ai-agents-cli create agent customer-support-bot --path ./projects/
+
+cicd_selector:
+  title: "🔧 Select CI/CD System"
+  instructions: "↑/↓: navigation • Enter: select • q/esc: exit"
+  gitlab: "GitLab CI"
+  gitlab_desc: "Use only GitLab CI (.gitlab-ci.yml)"
+  github: "GitHub Actions"
+  github_desc: "Use only GitHub Actions (.github/workflows)"
+  both: "Both options"
+  both_desc: "Create configurations for GitLab CI and GitHub Actions"
+  none: "No CI/CD"
+  none_desc: "Don't create CI/CD files"
+
+messages:
+  creating_project: "Creating project..."
+  project_created: "✅ Project created successfully!"
+  next_steps: "Next steps:"
+  cd_project: "1. Go to project directory:"
+  install_deps: "2. Install dependencies:"
+  setup_env: "3. Setup environment variables:"
+  run_project: "4. Run project:"
+  docker_commands: "5. For Docker:"
+  documentation: "📖 Documentation: README.md"
+  dev_commands: "🔧 Development commands: make help"
+  mcp_testing: "🤖 MCP server testing: GET /mcp/info"
+  agent_testing: "🤖 Agent testing: POST /agent/process"

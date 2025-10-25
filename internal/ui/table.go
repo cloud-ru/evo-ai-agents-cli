@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/api"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/di"
+	"github.com/samber/oops"
 )
 
 // TableInterface определяет интерфейс для работы с таблицами
@@ -194,7 +195,10 @@ func ShowMCPServersTable(servers []api.MCPServer, title string) error {
 // ShowAgentsListFromAPI показывает список агентов из API
 func ShowAgentsListFromAPI(ctx context.Context, limit, offset int) error {
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		return fmt.Errorf("Ошибка получения API клиента: %v", err)
+	}
 
 	// Создаем функцию загрузки данных
 	dataLoader := func(ctx context.Context, limit, offset int) ([]table.Row, int, error) {
@@ -256,7 +260,10 @@ func ShowAgentsListFromAPI(ctx context.Context, limit, offset int) error {
 // ShowMCPServersListFromAPI показывает список MCP серверов из API
 func ShowMCPServersListFromAPI(ctx context.Context, limit, offset int) error {
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		return fmt.Errorf("Ошибка получения API клиента: %v", err)
+	}
 
 	// Создаем функцию загрузки данных
 	dataLoader := func(ctx context.Context, limit, offset int) ([]table.Row, int, error) {
@@ -315,7 +322,10 @@ func ShowMCPServersListFromAPI(ctx context.Context, limit, offset int) error {
 // ShowAgentSystemsListFromAPI показывает список систем агентов из API
 func ShowAgentSystemsListFromAPI(ctx context.Context, limit, offset int) error {
 	container := di.GetContainer()
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		return fmt.Errorf("Ошибка получения API клиента: %v", err)
+	}
 
 	// Создаем функцию загрузки данных
 	dataLoader := func(ctx context.Context, limit, offset int) ([]table.Row, int, error) {
@@ -377,43 +387,55 @@ func CheckTerminalSize() error {
 }
 
 // getCreatedByInfo получает информацию о создателе агента для таблицы
-func getCreatedByInfo(ctx context.Context, container *di.Container, userID string) string {
+func getCreatedByInfo(ctx context.Context, container *di.Container, userID string) (string, error) {
 	if userID == "" {
-		return "Не указан"
+		return "Не указан", nil
 	}
 
-	config := container.GetConfig()
+	config, err := container.GetConfig()
+	if err != nil {
+		return "", oops.Errorf("Ошибка получения конфигурации: %v", err)
+	}
 	if config.CustomerID == "" {
-		return fmt.Sprintf("ID: %s", userID)
+		return fmt.Sprintf("ID: %s", userID), nil
 	}
 
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		return "", oops.Errorf("Ошибка получения API клиента: %v", err)
+	}
 	user, err := apiClient.Users.Get(ctx, config.CustomerID, userID)
 	if err != nil {
-		return fmt.Sprintf("ID: %s", userID)
+		return fmt.Sprintf("ID: %s", userID), nil
 	}
 
-	return FormatUserName(user.ID, user.FirstName, user.LastName, user.Email)
+	return FormatUserName(user.ID, user.FirstName, user.LastName, user.Email), nil
 }
 
 // getUpdatedByInfo получает информацию об изменяющем агента для таблицы
-func getUpdatedByInfo(ctx context.Context, container *di.Container, userID string) string {
+func getUpdatedByInfo(ctx context.Context, container *di.Container, userID string) (string, error) {
 	if userID == "" {
-		return "Не указан"
+		return "Не указан", nil
 	}
 
-	config := container.GetConfig()
+	config, err := container.GetConfig()
+	if err != nil {
+		return "", oops.Errorf("Ошибка получения конфигурации: %v", err)
+	}
 	if config.CustomerID == "" {
-		return fmt.Sprintf("ID: %s", userID)
+		return fmt.Sprintf("ID: %s", userID), nil
 	}
 
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		return "", oops.Errorf("Ошибка получения API клиента: %v", err)
+	}
 	user, err := apiClient.Users.Get(ctx, config.CustomerID, userID)
 	if err != nil {
-		return fmt.Sprintf("ID: %s", userID)
+		return fmt.Sprintf("ID: %s", userID), nil
 	}
 
-	return FormatUserName(user.ID, user.FirstName, user.LastName, user.Email)
+	return FormatUserName(user.ID, user.FirstName, user.LastName, user.Email), nil
 }
 
 // RenderAgentDetails отображает полную информацию об агенте
@@ -444,8 +466,14 @@ func RenderAgentDetails(agent *api.Agent, ctx context.Context, container *di.Con
 		Margin(0, 0, 0, 2)
 
 	// Получаем информацию о пользователях
-	createdByInfo := getCreatedByInfoForUI(ctx, container, agent.CreatedBy)
-	updatedByInfo := getUpdatedByInfoForUI(ctx, container, agent.UpdatedBy)
+	createdByInfo, err := getCreatedByInfoForUI(ctx, container, agent.CreatedBy)
+	if err != nil {
+		log.Fatal("Ошибка получения информации о создателе агента", "error", err)
+	}
+	updatedByInfo, err := getUpdatedByInfoForUI(ctx, container, agent.UpdatedBy)
+	if err != nil {
+		log.Fatal("Ошибка получения информации о создателе агента", "error", err)
+	}
 
 	// Формируем результат
 	result := headerStyle.Render("🤖 Информация об агенте")
@@ -703,43 +731,55 @@ func RenderAgentDetails(agent *api.Agent, ctx context.Context, container *di.Con
 }
 
 // getCreatedByInfoForUI получает информацию о создателе агента для UI
-func getCreatedByInfoForUI(ctx context.Context, container *di.Container, userID string) string {
+func getCreatedByInfoForUI(ctx context.Context, container *di.Container, userID string) (string, error) {
 	if userID == "" {
-		return "Не указан"
+		return "Не указан", nil
 	}
 
-	config := container.GetConfig()
+	config, err := container.GetConfig()
+	if err != nil {
+		return "", oops.Errorf("Ошибка получения конфигурации: %v", err)
+	}
 	if config.CustomerID == "" {
-		return fmt.Sprintf("ID: %s", userID)
+		return fmt.Sprintf("ID: %s", userID), nil
 	}
 
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		return "", oops.Errorf("Ошибка получения API клиента: %v", err)
+	}
 	user, err := apiClient.Users.Get(ctx, config.CustomerID, userID)
 	if err != nil {
-		return fmt.Sprintf("ID: %s", userID)
+		return fmt.Sprintf("ID: %s", userID), nil
 	}
 
-	return FormatUserName(user.ID, user.FirstName, user.LastName, user.Email)
+	return FormatUserName(user.ID, user.FirstName, user.LastName, user.Email), nil
 }
 
 // getUpdatedByInfoForUI получает информацию об изменяющем агента для UI
-func getUpdatedByInfoForUI(ctx context.Context, container *di.Container, userID string) string {
+func getUpdatedByInfoForUI(ctx context.Context, container *di.Container, userID string) (string, error) {
 	if userID == "" {
-		return "Не указан"
+		return "Не указан", nil
 	}
 
-	config := container.GetConfig()
+	config, err := container.GetConfig()
+	if err != nil {
+		return "", oops.Errorf("Ошибка получения конфигурации: %v", err)
+	}
 	if config.CustomerID == "" {
-		return fmt.Sprintf("ID: %s", userID)
+		return fmt.Sprintf("ID: %s", userID), nil
 	}
 
-	apiClient := container.GetAPI()
+	apiClient, err := container.GetAPI()
+	if err != nil {
+		return "", oops.Errorf("Ошибка получения API клиента: %v", err)
+	}
 	user, err := apiClient.Users.Get(ctx, config.CustomerID, userID)
 	if err != nil {
-		return fmt.Sprintf("ID: %s", userID)
+		return fmt.Sprintf("ID: %s", userID), nil
 	}
 
-	return FormatUserName(user.ID, user.FirstName, user.LastName, user.Email)
+	return FormatUserName(user.ID, user.FirstName, user.LastName, user.Email), nil
 }
 
 // FormatUserName форматирует имя пользователя для отображения

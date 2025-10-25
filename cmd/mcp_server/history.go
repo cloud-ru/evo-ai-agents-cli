@@ -25,7 +25,10 @@ var historyCmd = &cobra.Command{
 		// Получаем историю MCP сервера
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
-		apiClient := container.GetAPI()
+		apiClient, err := container.GetAPI()
+	if err != nil {
+		log.Fatal("Failed to get API client", "error", err)
+	}
 
 		history, err := apiClient.MCPServers.GetHistory(ctx, serverID)
 		if err != nil {

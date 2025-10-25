@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
+	"github.com/cloud-ru/evo-ai-agents-cli/cmd/create"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +24,7 @@ var RootCMD = &cobra.Command{
 • Управление MCP серверами
 • Создание и настройка агентов
 • Управление системами агентов
+• Создание проектов из шаблонов
 • Интеграция с CI/CD процессами
 
 Для начала работы используйте команду 'validate' для проверки конфигурации
@@ -60,4 +62,7 @@ var RootCMD = &cobra.Command{
 func init() {
 	RootCMD.PersistentFlags().
 		BoolVarP(&isVerbose, "verbose", "v", false, "Детализация процесса")
+
+	// Add create command
+	RootCMD.AddCommand(create.RootCMD)
 }

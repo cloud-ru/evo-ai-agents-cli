@@ -25,7 +25,10 @@ var deleteCmd = &cobra.Command{
 
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
-		apiClient := container.GetAPI()
+		apiClient, err := container.GetAPI()
+		if err != nil {
+			log.Fatal("Failed to get API client", "error", err)
+		}
 
 		// Подтверждение удаления
 		if !systemDeleteForce {
@@ -39,8 +42,8 @@ var deleteCmd = &cobra.Command{
 		}
 
 		// Удаляем систему
-		err := apiClient.AgentSystems.Delete(ctx, systemID)
-		if err != nil {
+
+		if err = apiClient.AgentSystems.Delete(ctx, systemID); err != nil {
 			log.Fatal("Failed to delete system", "error", err, "system_id", systemID)
 		}
 

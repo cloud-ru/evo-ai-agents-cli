@@ -13,12 +13,12 @@ func TestConfigValidator_ValidateFile(t *testing.T) {
 	tempDir := t.TempDir()
 
 	tests := []struct {
-		name           string
-		fileContent    string
-		fileName       string
-		expectValid    bool
-		expectErrors   int
-		errorContains  []string
+		name          string
+		fileContent   string
+		fileName      string
+		expectValid   bool
+		expectErrors  int
+		errorContains []string
 	}{
 		{
 			name: "valid agents yaml",
@@ -29,9 +29,9 @@ func TestConfigValidator_ValidateFile(t *testing.T) {
       provider: "openai"
       model: "gpt-4"
 `,
-			fileName:      "valid_agents.yaml",
-			expectValid:   true,
-			expectErrors:  0,
+			fileName:     "valid_agents.yaml",
+			expectValid:  true,
+			expectErrors: 0,
 		},
 		{
 			name: "valid mcp-servers yaml",
@@ -42,9 +42,9 @@ func TestConfigValidator_ValidateFile(t *testing.T) {
       host: "localhost"
       port: 8080
 `,
-			fileName:      "valid_mcp.yaml",
-			expectValid:   true,
-			expectErrors:  0,
+			fileName:     "valid_mcp.yaml",
+			expectValid:  true,
+			expectErrors: 0,
 		},
 		{
 			name: "valid agent-systems yaml",
@@ -55,9 +55,9 @@ func TestConfigValidator_ValidateFile(t *testing.T) {
       - "agent1"
       - "agent2"
 `,
-			fileName:      "valid_systems.yaml",
-			expectValid:   true,
-			expectErrors:  0,
+			fileName:     "valid_systems.yaml",
+			expectValid:  true,
+			expectErrors: 0,
 		},
 		{
 			name: "invalid agent - missing name (YAML)",
@@ -119,56 +119,56 @@ func TestConfigValidator_ValidateFile(t *testing.T) {
 			errorContains: []string{"Agents are required"},
 		},
 		{
-			name: "invalid agent - missing name (JSON)",
-			fileContent: `{"agents": [{"description": "Test agent", "llm_options": {"provider": "openai"}}]}`,
+			name:          "invalid agent - missing name (JSON)",
+			fileContent:   `{"agents": [{"description": "Test agent", "llm_options": {"provider": "openai"}}]}`,
 			fileName:      "invalid_agent.json",
 			expectValid:   false,
 			expectErrors:  1,
 			errorContains: []string{"Name is required"},
 		},
 		{
-			name: "invalid agent - missing llm_options (JSON)",
-			fileContent: `{"agents": [{"name": "test-agent", "description": "Test agent"}]}`,
+			name:          "invalid agent - missing llm_options (JSON)",
+			fileContent:   `{"agents": [{"name": "test-agent", "description": "Test agent"}]}`,
 			fileName:      "invalid_agent2.json",
 			expectValid:   false,
 			expectErrors:  1,
 			errorContains: []string{"LLM options are required"},
 		},
 		{
-			name: "invalid agent - invalid name format (JSON)",
-			fileContent: `{"agents": [{"name": "Test_Agent", "description": "Test agent", "llm_options": {"provider": "openai"}}]}`,
+			name:          "invalid agent - invalid name format (JSON)",
+			fileContent:   `{"agents": [{"name": "Test_Agent", "description": "Test agent", "llm_options": {"provider": "openai"}}]}`,
 			fileName:      "invalid_agent3.json",
 			expectValid:   false,
 			expectErrors:  1,
 			errorContains: []string{"Name must contain only lowercase letters, numbers, and hyphens"},
 		},
 		{
-			name: "invalid mcp-server - missing name (JSON)",
-			fileContent: `{"mcp-servers": [{"description": "Test MCP server", "options": {"host": "localhost"}}]}`,
+			name:          "invalid mcp-server - missing name (JSON)",
+			fileContent:   `{"mcp-servers": [{"description": "Test MCP server", "options": {"host": "localhost"}}]}`,
 			fileName:      "invalid_mcp.json",
 			expectValid:   false,
 			expectErrors:  1,
 			errorContains: []string{"Name is required"},
 		},
 		{
-			name: "invalid agent-system - missing agents (JSON)",
-			fileContent: `{"agent-systems": [{"name": "test-system", "description": "Test system"}]}`,
+			name:          "invalid agent-system - missing agents (JSON)",
+			fileContent:   `{"agent-systems": [{"name": "test-system", "description": "Test system"}]}`,
 			fileName:      "invalid_system.json",
 			expectValid:   false,
 			expectErrors:  1,
 			errorContains: []string{"Agents are required"},
 		},
 		{
-			name: "empty file",
-			fileContent: ``,
+			name:          "empty file",
+			fileContent:   ``,
 			fileName:      "empty.yaml",
 			expectValid:   false,
 			expectErrors:  1,
 			errorContains: []string{"Configuration must be a JSON object"},
 		},
 		{
-			name: "invalid yaml structure",
-			fileContent: `invalid yaml content: [`,
+			name:          "invalid yaml structure",
+			fileContent:   `invalid yaml content: [`,
 			fileName:      "invalid_yaml.yaml",
 			expectValid:   false,
 			expectErrors:  1,
@@ -315,9 +315,9 @@ func TestValidationError_String(t *testing.T) {
 
 // Вспомогательная функция для проверки содержания строки
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && s[:len(substr)] == substr || 
-		   len(s) > len(substr) && s[len(s)-len(substr):] == substr ||
-		   len(s) >= len(substr) && containsSubstring(s, substr)
+	return len(s) >= len(substr) && s[:len(substr)] == substr ||
+		len(s) > len(substr) && s[len(s)-len(substr):] == substr ||
+		len(s) >= len(substr) && containsSubstring(s, substr)
 }
 
 func containsSubstring(s, substr string) bool {
