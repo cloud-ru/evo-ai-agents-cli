@@ -39,6 +39,40 @@ func (h *Handler) Handle(err error) string {
 	return h.handleGenericError(err)
 }
 
+// HandleSimple обрабатывает ошибку и возвращает простое сообщение без рамок
+func (h *Handler) HandleSimple(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	// Логируем ошибку только один раз
+	if appErr, ok := err.(*AppError); ok {
+		h.logger.LogAppError(appErr, "Structured error occurred")
+	} else {
+		h.logger.LogError(err, "Error occurred")
+	}
+
+	// Используем простое отображение
+	return FormatSimpleError(err)
+}
+
+// HandlePlain обрабатывает ошибку и возвращает простой текст без стилей
+func (h *Handler) HandlePlain(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	// Логируем ошибку только один раз
+	if appErr, ok := err.(*AppError); ok {
+		h.logger.LogAppError(appErr, "Structured error occurred")
+	} else {
+		h.logger.LogError(err, "Error occurred")
+	}
+
+	// Используем простое текстовое отображение
+	return FormatPlainError(err)
+}
+
 // handleAppError обрабатывает структурированную ошибку
 func (h *Handler) handleAppError(err *AppError) string {
 	// Логируем структурированную ошибку

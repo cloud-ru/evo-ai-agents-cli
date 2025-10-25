@@ -25,45 +25,45 @@ var UIStyles = struct {
 		BorderForeground(lipgloss.Color("1")).
 		Padding(1, 2).
 		Margin(1, 0),
-	
+
 	ErrorTitle: lipgloss.NewStyle().
 		Foreground(lipgloss.Color("1")).
 		Bold(true).
 		Margin(0, 0, 1, 0),
-	
+
 	ErrorMessage: lipgloss.NewStyle().
 		Foreground(lipgloss.Color("252")).
 		Margin(0, 0, 1, 0),
-	
+
 	ErrorDetails: lipgloss.NewStyle().
 		Foreground(lipgloss.Color("245")).
 		Italic(true).
 		Margin(0, 0, 1, 0),
-	
+
 	ErrorCode: lipgloss.NewStyle().
 		Foreground(lipgloss.Color("8")).
 		Background(lipgloss.Color("236")).
 		Padding(0, 1).
 		Margin(0, 0, 1, 0),
-	
+
 	ErrorContext: lipgloss.NewStyle().
 		Foreground(lipgloss.Color("244")).
 		Margin(0, 0, 0, 2),
-	
+
 	SuccessBox: lipgloss.NewStyle().
 		Foreground(lipgloss.Color("2")).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("2")).
 		Padding(1, 2).
 		Margin(1, 0),
-	
+
 	WarningBox: lipgloss.NewStyle().
 		Foreground(lipgloss.Color("214")).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("214")).
 		Padding(1, 2).
 		Margin(1, 0),
-	
+
 	InfoBox: lipgloss.NewStyle().
 		Foreground(lipgloss.Color("39")).
 		Border(lipgloss.RoundedBorder()).
@@ -129,14 +129,29 @@ func FormatError(err error) string {
 	return formatGenericError(err)
 }
 
+// FormatSimpleError форматирует ошибку в простом виде без рамок
+func FormatSimpleError(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	// Если это AppError, используем простое отображение
+	if appErr, ok := err.(*AppError); ok {
+		return formatSimpleAppError(appErr)
+	}
+
+	// Для обычных ошибок используем простое отображение
+	return formatSimpleGenericError(err)
+}
+
 // formatAppError форматирует структурированную ошибку
 func formatAppError(err *AppError) string {
 	var parts []string
 
 	// Заголовок с иконками
-	title := fmt.Sprintf("%s %s %s", 
-		ErrorIcon(err.Type), 
-		SeverityIcon(err.Severity), 
+	title := fmt.Sprintf("%s %s %s",
+		ErrorIcon(err.Type),
+		SeverityIcon(err.Severity),
 		err.Message)
 	parts = append(parts, UIStyles.ErrorTitle.Render(title))
 
@@ -172,16 +187,97 @@ func formatAppError(err *AppError) string {
 func formatGenericError(err error) string {
 	title := UIStyles.ErrorTitle.Render("❌ Ошибка")
 	message := UIStyles.ErrorMessage.Render(err.Error())
-	
+
 	content := fmt.Sprintf("%s\n\n%s", title, message)
 	return UIStyles.ErrorBox.Render(content)
+}
+
+// formatSimpleAppError форматирует структурированную ошибку в простом виде
+func formatSimpleAppError(err *AppError) string {
+	var parts []string
+
+	// Заголовок с иконками
+	title := fmt.Sprintf("%s %s %s",
+		ErrorIcon(err.Type),
+		SeverityIcon(err.Severity),
+		err.Message)
+	parts = append(parts, UIStyles.ErrorTitle.Render(title))
+
+	// Код ошибки
+	if err.Code != "" {
+		parts = append(parts, UIStyles.ErrorCode.Render(err.Code))
+	}
+
+	// Детали
+	if err.Details != "" {
+		parts = append(parts, UIStyles.ErrorDetails.Render(err.Details))
+	}
+
+	// Оригинальная ошибка
+	if err.Original != nil {
+		parts = append(parts, UIStyles.ErrorDetails.Render(fmt.Sprintf("Причина: %v", err.Original)))
+	}
+
+	return strings.Join(parts, "\n")
+}
+
+// formatSimpleGenericError форматирует обычную ошибку в простом виде
+func formatSimpleGenericError(err error) string {
+	title := UIStyles.ErrorTitle.Render("❌ Ошибка")
+	message := UIStyles.ErrorMessage.Render(err.Error())
+
+	return fmt.Sprintf("%s\n\n%s", title, message)
+}
+
+// FormatPlainError форматирует ошибку в простом текстовом виде без стилей
+func FormatPlainError(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	// Если это AppError, используем структурированное отображение
+	if appErr, ok := err.(*AppError); ok {
+		return formatPlainAppError(appErr)
+	}
+
+	// Для обычных ошибок используем простое отображение
+	return fmt.Sprintf("❌ Ошибка: %s", err.Error())
+}
+
+// formatPlainAppError форматирует структурированную ошибку в простом текстовом виде
+func formatPlainAppError(err *AppError) string {
+	var parts []string
+
+	// Заголовок с иконками
+	title := fmt.Sprintf("%s %s %s",
+		ErrorIcon(err.Type),
+		SeverityIcon(err.Severity),
+		err.Message)
+	parts = append(parts, title)
+
+	// Код ошибки
+	if err.Code != "" {
+		parts = append(parts, fmt.Sprintf("Код: %s", err.Code))
+	}
+
+	// Детали
+	if err.Details != "" {
+		parts = append(parts, fmt.Sprintf("Детали: %s", err.Details))
+	}
+
+	// Оригинальная ошибка
+	if err.Original != nil {
+		parts = append(parts, fmt.Sprintf("Причина: %v", err.Original))
+	}
+
+	return strings.Join(parts, "\n")
 }
 
 // FormatSuccess форматирует сообщение об успехе
 func FormatSuccess(message string) string {
 	title := UIStyles.ErrorTitle.Render("✅ Успех")
 	msg := UIStyles.ErrorMessage.Render(message)
-	
+
 	content := fmt.Sprintf("%s\n\n%s", title, msg)
 	return UIStyles.SuccessBox.Render(content)
 }
@@ -190,7 +286,7 @@ func FormatSuccess(message string) string {
 func FormatWarning(message string) string {
 	title := UIStyles.ErrorTitle.Render("⚠️ Предупреждение")
 	msg := UIStyles.ErrorMessage.Render(message)
-	
+
 	content := fmt.Sprintf("%s\n\n%s", title, msg)
 	return UIStyles.WarningBox.Render(content)
 }
@@ -199,7 +295,7 @@ func FormatWarning(message string) string {
 func FormatInfo(message string) string {
 	title := UIStyles.ErrorTitle.Render("ℹ️ Информация")
 	msg := UIStyles.ErrorMessage.Render(message)
-	
+
 	content := fmt.Sprintf("%s\n\n%s", title, msg)
 	return UIStyles.InfoBox.Render(content)
 }

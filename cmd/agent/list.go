@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/charmbracelet/log"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -40,8 +40,12 @@ var listCmd = &cobra.Command{
 
 		// Показываем таблицу агентов
 		if err := ui.ShowAgentsListFromAPI(ctx, listLimit, listOffset); err != nil {
-			log.Error("Ошибка отображения таблицы агентов", "error", err)
-			fmt.Println(ui.CheckAndDisplayError(err))
+			// Создаем обработчик ошибок
+			errorHandler := errors.NewHandler()
+			appErr := errorHandler.WrapAPIError(err, "AGENTS_LIST_FAILED", "Ошибка получения списка агентов")
+			
+			// Отображаем простую ошибку без стилей и дублирования
+			fmt.Println(errorHandler.HandlePlain(appErr))
 			return
 		}
 	},

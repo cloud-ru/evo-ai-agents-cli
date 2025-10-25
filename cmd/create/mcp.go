@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/scaffolder"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
-	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
 	"github.com/spf13/cobra"
 )
 
