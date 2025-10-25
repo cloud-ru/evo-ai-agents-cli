@@ -13,6 +13,8 @@ type Credentials struct {
 	IAMKeyID     string `json:"iam_key_id"`
 	IAMSecretKey string `json:"iam_secret_key"`
 	IAMEndpoint  string `json:"iam_endpoint"`
+	ProjectID    string `json:"project_id,omitempty"`
+	CustomerID   string `json:"customer_id,omitempty"`
 	UserEmail    string `json:"user_email,omitempty"`
 	LastLogin    string `json:"last_login,omitempty"`
 }
@@ -109,8 +111,16 @@ func (cm *CredentialsManager) SetEnvironmentVariables() error {
 
 	// Устанавливаем переменные окружения
 	os.Setenv("IAM_KEY_ID", creds.IAMKeyID)
-	os.Setenv("IAM_SECRET_KEY", creds.IAMSecretKey)
+	os.Setenv("IAM_SECRET", creds.IAMSecretKey) // API клиент ожидает IAM_SECRET, а не IAM_SECRET_KEY
 	os.Setenv("IAM_ENDPOINT", creds.IAMEndpoint)
+
+	// Устанавливаем дополнительные переменные если они есть
+	if creds.ProjectID != "" {
+		os.Setenv("PROJECT_ID", creds.ProjectID)
+	}
+	if creds.CustomerID != "" {
+		os.Setenv("CUSTOMER_ID", creds.CustomerID)
+	}
 
 	return nil
 }

@@ -37,7 +37,7 @@ deploy:
   stage: deploy
   image: alpine:latest
   script:
-    - echo "Deploying {{.ProjectName}} MCP server to production"
+    - echo "Deploying {{.ProjectName}} LangGraph Agent to production"
     - echo "Image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
   only:
     - main

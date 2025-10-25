@@ -20,8 +20,16 @@ func InitCredentials() error {
 
 		// Устанавливаем переменные окружения
 		os.Setenv("IAM_KEY_ID", creds.IAMKeyID)
-		os.Setenv("IAM_SECRET_KEY", creds.IAMSecretKey)
+		os.Setenv("IAM_SECRET", creds.IAMSecretKey) // API клиент ожидает IAM_SECRET
 		os.Setenv("IAM_ENDPOINT", creds.IAMEndpoint)
+
+		// Устанавливаем дополнительные переменные если они есть
+		if creds.ProjectID != "" {
+			os.Setenv("PROJECT_ID", creds.ProjectID)
+		}
+		if creds.CustomerID != "" {
+			os.Setenv("CUSTOMER_ID", creds.CustomerID)
+		}
 	}
 
 	return nil
@@ -30,7 +38,7 @@ func InitCredentials() error {
 // CheckCredentials проверяет наличие учетных данных
 func CheckCredentials() error {
 	keyID := os.Getenv("IAM_KEY_ID")
-	secretKey := os.Getenv("IAM_SECRET_KEY")
+	secretKey := os.Getenv("IAM_SECRET") // API клиент ожидает IAM_SECRET
 	endpoint := os.Getenv("IAM_ENDPOINT")
 
 	if keyID == "" || secretKey == "" || endpoint == "" {

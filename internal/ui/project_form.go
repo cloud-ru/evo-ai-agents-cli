@@ -11,18 +11,19 @@ import (
 
 // ProjectFormData represents the data collected from the form
 type ProjectFormData struct {
-	ProjectName string
-	ProjectPath string
-	Author      string
-	Framework   string // New field for agent framework selection
-	CICDType    string
-	GitInit     bool
-	CreateEnv   bool
-	InstallDeps bool
+	ProjectName     string
+	Author          string
+	Framework       string // New field for agent framework selection
+	CICDType        string
+	DatabaseType    string // New field for database selection
+	ExternalAPIKeys string // New field for external API keys selection
+	GitInit         bool
+	CreateEnv       bool
+	InstallDeps     bool
 }
 
 // RunProjectForm runs the project creation form using huh
-func RunProjectForm(projectType string) (*ProjectFormData, error) {
+func RunProjectForm(projectType string, defaultProjectName ...string) (*ProjectFormData, error) {
 	// Get default author from git config
 	defaultAuthor := getGitAuthorFromConfig()
 	if defaultAuthor == "" {
@@ -31,21 +32,29 @@ func RunProjectForm(projectType string) (*ProjectFormData, error) {
 
 	// Form data with default values
 	formData := ProjectFormData{
-		Author:      defaultAuthor,
-		CICDType:    "both",
-		GitInit:     true,
-		CreateEnv:   true,
-		InstallDeps: false,
+		Author:          defaultAuthor,
+		CICDType:        "both",
+		DatabaseType:    "none",
+		ExternalAPIKeys: "none",
+		GitInit:         true,
+		CreateEnv:       true,
+		InstallDeps:     false,
 	}
 
 	// Set default framework and project names
 	if projectType == "agent" {
 		formData.Framework = "adk"
-		formData.ProjectName = "my-awesome-agent"
-		formData.ProjectPath = "./"
+		if len(defaultProjectName) > 0 && defaultProjectName[0] != "" {
+			formData.ProjectName = defaultProjectName[0]
+		} else {
+			formData.ProjectName = "my-awesome-agent"
+		}
 	} else {
-		formData.ProjectName = "my-awesome-mcp"
-		formData.ProjectPath = "./"
+		if len(defaultProjectName) > 0 && defaultProjectName[0] != "" {
+			formData.ProjectName = defaultProjectName[0]
+		} else {
+			formData.ProjectName = "my-awesome-mcp"
+		}
 	}
 
 	// Create form fields based on project type
@@ -69,16 +78,6 @@ func RunProjectForm(projectType string) (*ProjectFormData, error) {
 						return nil
 					}),
 
-				// Project path
-				huh.NewInput().
-					Title("📁 Путь для создания").
-					Description("Директория для создания проекта (оставьте пустым для текущей)").
-					Placeholder("./").
-					Value(&formData.ProjectPath).
-					Validate(func(str string) error {
-						// Path is optional, accept empty or default values
-						return nil
-					}),
 
 				// Author
 				huh.NewInput().
@@ -113,6 +112,29 @@ func RunProjectForm(projectType string) (*ProjectFormData, error) {
 						huh.NewOption("Без CI/CD", "none"),
 					).
 					Value(&formData.CICDType),
+
+				// Database selection
+				huh.NewSelect[string]().
+					Title("🗄️ База данных").
+					Description("Выберите базу данных для хранения состояния агента").
+					Options(
+						huh.NewOption("Не использовать", "none"),
+						huh.NewOption("PostgreSQL", "postgresql"),
+						huh.NewOption("Redis", "redis"),
+					).
+					Value(&formData.DatabaseType),
+
+				// External API Keys
+				huh.NewSelect[string]().
+					Title("🔑 Внешние API ключи").
+					Description("Выберите внешние API для интеграции").
+					Options(
+						huh.NewOption("Не использовать", "none"),
+						huh.NewOption("OpenAI", "openai"),
+						huh.NewOption("Anthropic", "anthropic"),
+						huh.NewOption("Оба (OpenAI + Anthropic)", "both"),
+					).
+					Value(&formData.ExternalAPIKeys),
 
 				// Git initialization
 				huh.NewConfirm().
@@ -156,16 +178,6 @@ func RunProjectForm(projectType string) (*ProjectFormData, error) {
 						return nil
 					}),
 
-				// Project path
-				huh.NewInput().
-					Title("📁 Путь для создания").
-					Description("Директория для создания проекта (оставьте пустым для текущей)").
-					Placeholder("./").
-					Value(&formData.ProjectPath).
-					Validate(func(str string) error {
-						// Path is optional, accept empty or default values
-						return nil
-					}),
 
 				// Author
 				huh.NewInput().

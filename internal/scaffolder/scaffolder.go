@@ -30,13 +30,15 @@ type ScaffolderConfig struct {
 
 // ProjectData holds the data for template rendering
 type ProjectData struct {
-	ProjectName string
-	ProjectType string
-	Framework   string // New field for agent framework
-	Author      string
-	Year        string
-	CICDType    string
-	Description string // New field for project description
+	ProjectName     string
+	ProjectType     string
+	Framework       string // New field for agent framework
+	Author          string
+	Year            string
+	CICDType        string
+	DatabaseType    string // New field for database selection
+	ExternalAPIKeys string // New field for external API keys selection
+	Description     string // New field for project description
 }
 
 // NewScaffolder creates a new scaffolder instance
@@ -72,7 +74,7 @@ func (s *Scaffolder) CreateProject(projectType, projectName, targetPath, cicdTyp
 
 	// Validate inputs
 	if err := s.validateInputs(projectType, projectName, targetPath); err != nil {
-		return errors.Wrap(err, errors.ErrorTypeValidation, errors.SeverityMedium, "VALIDATION_FAILED", "Ошибка валидации входных данных")
+		return errors.Wrap(err, errors.ErrorTypeValidation, errors.SeverityMedium, "VALIDATION_FAILED", fmt.Sprintf("Ошибка валидации входных данных: %v", err))
 	}
 
 	// Prepare template data
@@ -94,7 +96,7 @@ func (s *Scaffolder) CreateProject(projectType, projectName, targetPath, cicdTyp
 
 	// Process template files
 	if err := s.processTemplateFiles(templateDir, targetPath, data); err != nil {
-		return errors.Wrap(err, errors.ErrorTypeTemplate, errors.SeverityMedium, "TEMPLATE_PROCESSING_FAILED", "Ошибка обработки шаблонов")
+		return errors.Wrap(err, errors.ErrorTypeTemplate, errors.SeverityMedium, "TEMPLATE_PROCESSING_FAILED", fmt.Sprintf("Ошибка обработки шаблонов: %v", err))
 	}
 
 	// log.Info("Project created successfully", "path", targetPath)
@@ -102,23 +104,25 @@ func (s *Scaffolder) CreateProject(projectType, projectName, targetPath, cicdTyp
 }
 
 // CreateProjectWithOptions creates a new project from template with additional options
-func (s *Scaffolder) CreateProjectWithOptions(projectType, projectName, targetPath, cicdType, framework string, options []string) error {
+func (s *Scaffolder) CreateProjectWithOptions(projectType, projectName, targetPath, cicdType, framework, databaseType, externalAPIKeys string, options []string) error {
 	// log.Info("Creating project", "type", projectType, "name", projectName, "path", targetPath)
 
 	// Validate inputs
 	if err := s.validateInputs(projectType, projectName, targetPath); err != nil {
-		return errors.Wrap(err, errors.ErrorTypeValidation, errors.SeverityMedium, "VALIDATION_FAILED", "Ошибка валидации входных данных")
+		return errors.Wrap(err, errors.ErrorTypeValidation, errors.SeverityMedium, "VALIDATION_FAILED", fmt.Sprintf("Ошибка валидации входных данных: %v", err))
 	}
 
 	// Prepare template data
 	data := &ProjectData{
-		ProjectName: projectName,
-		ProjectType: projectType,
-		Framework:   framework,
-		Author:      s.getAuthor(),
-		Year:        fmt.Sprintf("%d", time.Now().Year()),
-		CICDType:    cicdType,
-		Description: s.getProjectDescription(projectType, framework),
+		ProjectName:     projectName,
+		ProjectType:     projectType,
+		Framework:       framework,
+		Author:          s.getAuthor(),
+		Year:            fmt.Sprintf("%d", time.Now().Year()),
+		CICDType:        cicdType,
+		DatabaseType:    databaseType,
+		ExternalAPIKeys: externalAPIKeys,
+		Description:     s.getProjectDescription(projectType, framework),
 	}
 
 	// Get template directory based on project type and framework
@@ -134,13 +138,23 @@ func (s *Scaffolder) CreateProjectWithOptions(projectType, projectName, targetPa
 		return errors.Wrap(err, errors.ErrorTypeFileSystem, errors.SeverityMedium, "DIRECTORY_CREATION_FAILED", "Ошибка создания директории")
 	}
 
+	// Cleanup function to remove project directory on error
+	cleanup := func() {
+		if err := os.RemoveAll(targetPath); err != nil {
+			// Log cleanup error but don't fail the main operation
+			fmt.Printf("Warning: failed to cleanup project directory %s: %v\n", targetPath, err)
+		}
+	}
+
 	// Process template files
 	if err := s.processTemplateFiles(templateDir, targetPath, data); err != nil {
-		return errors.Wrap(err, errors.ErrorTypeTemplate, errors.SeverityMedium, "TEMPLATE_PROCESSING_FAILED", "Ошибка обработки шаблонов")
+		cleanup()
+		return errors.Wrap(err, errors.ErrorTypeTemplate, errors.SeverityMedium, "TEMPLATE_PROCESSING_FAILED", fmt.Sprintf("Ошибка обработки шаблонов: %v", err))
 	}
 
 	// Apply additional options
 	if err := s.applyProjectOptions(targetPath, options); err != nil {
+		cleanup()
 		return fmt.Errorf("failed to apply project options: %w", err)
 	}
 
@@ -170,6 +184,11 @@ func (s *Scaffolder) validateInputs(projectType, projectName, targetPath string)
 
 // processTemplateFiles processes all template files in the template directory
 func (s *Scaffolder) processTemplateFiles(templateDir, targetPath string, data *ProjectData) error {
+	// Debug: check if template directory exists
+	if _, err := s.templates.ReadDir(templateDir); err != nil {
+		return fmt.Errorf("template directory '%s' not found in embedded FS: %w", templateDir, err)
+	}
+
 	return fs.WalkDir(s.templates, templateDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -193,6 +212,14 @@ func (s *Scaffolder) processTemplateFiles(templateDir, targetPath string, data *
 			relPath != ".env.example" &&
 			relPath != ".gitlab-ci.yml" &&
 			!strings.HasPrefix(relPath, ".github/") {
+			return nil
+		}
+
+		// Skip CI/CD files based on CICDType
+		if relPath == ".gitlab-ci.yml" && data.CICDType != "gitlab" && data.CICDType != "both" {
+			return nil
+		}
+		if strings.HasPrefix(relPath, ".github/") && data.CICDType != "github" && data.CICDType != "both" {
 			return nil
 		}
 
@@ -447,7 +474,7 @@ func (s *Scaffolder) initializeGitRepo(targetPath string) error {
 	return nil
 }
 
-// createEnvFile creates .env file from .env.example
+// createEnvFile creates .env file from .env.example with user credentials
 func (s *Scaffolder) createEnvFile(targetPath string) error {
 	envExamplePath := filepath.Join(targetPath, "env.example")
 	envPath := filepath.Join(targetPath, ".env")
@@ -457,9 +484,29 @@ func (s *Scaffolder) createEnvFile(targetPath string) error {
 		return nil // No .env.example file, skip
 	}
 
-	// Copy .env.example to .env
-	if err := copyFile(envExamplePath, envPath); err != nil {
-		return fmt.Errorf("failed to copy env.example to .env: %w", err)
+	// Read .env.example content
+	content, err := os.ReadFile(envExamplePath)
+	if err != nil {
+		return fmt.Errorf("failed to read env.example: %w", err)
+	}
+
+	// Get user credentials from environment or auth system
+	envContent := string(content)
+
+	// Replace placeholder values with actual values from environment
+	envContent = strings.ReplaceAll(envContent, "your_iam_key_id_here", os.Getenv("IAM_KEY_ID"))
+	envContent = strings.ReplaceAll(envContent, "your_iam_secret_key_here", os.Getenv("IAM_SECRET_KEY"))
+	envContent = strings.ReplaceAll(envContent, "your_project_id_here", os.Getenv("PROJECT_ID"))
+	envContent = strings.ReplaceAll(envContent, "your_customer_id_here", os.Getenv("CUSTOMER_ID"))
+
+	// Set EVOLUTION_PROJECT_ID to PROJECT_ID value
+	if projectID := os.Getenv("PROJECT_ID"); projectID != "" {
+		envContent = strings.ReplaceAll(envContent, "EVOLUTION_PROJECT_ID=${PROJECT_ID}", "EVOLUTION_PROJECT_ID="+projectID)
+	}
+
+	// Write .env file
+	if err := os.WriteFile(envPath, []byte(envContent), 0644); err != nil {
+		return fmt.Errorf("failed to write .env file: %w", err)
 	}
 
 	return nil

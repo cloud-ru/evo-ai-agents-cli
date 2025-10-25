@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  {{.ProjectName}}-agent:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+    restart: unless-stopped
+    networks:
+      - {{.ProjectName}}-network
+
+networks:
+  {{.ProjectName}}-network:
+    driver: bridge

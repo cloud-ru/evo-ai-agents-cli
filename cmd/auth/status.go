@@ -52,18 +52,15 @@ var statusCmd = &cobra.Command{
 		fmt.Println("✅ Учетные данные найдены:")
 		fmt.Printf("🔑 Key ID: %s\n", maskString(creds.IAMKeyID))
 		fmt.Printf("🌐 Endpoint: %s\n", creds.IAMEndpoint)
+		fmt.Printf("📋 Project ID: %s\n", creds.ProjectID)
+		if creds.CustomerID != "" {
+			fmt.Printf("👤 Customer ID: %s\n", creds.CustomerID)
+		}
 		fmt.Printf("⏰ Последний вход: %s\n", creds.LastLogin)
 
-		// Проверяем переменные окружения
-		keyID := os.Getenv("IAM_KEY_ID")
-		secretKey := os.Getenv("IAM_SECRET_KEY")
-		endpoint := os.Getenv("IAM_ENDPOINT")
-
-		if keyID != "" && secretKey != "" && endpoint != "" {
-			fmt.Println("\n✅ Переменные окружения установлены - можете использовать команды!")
-		} else {
-			fmt.Println("\n❌ Переменные окружения не установлены")
-			fmt.Println("💡 Выполните: ai-agents-cli auth login")
-		}
+		// Проверяем, что учетные данные доступны для использования
+		fmt.Println("\n✅ Учетные данные готовы к использованию!")
+		fmt.Println("💡 CLI автоматически читает конфигурацию из файла ~/.ai-agents-cli/credentials.json")
+		fmt.Println("💡 Переменные окружения больше не требуются - все работает из файла конфигурации")
 	},
 }

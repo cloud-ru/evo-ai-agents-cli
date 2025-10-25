@@ -4,6 +4,8 @@ import (
 	"github.com/caarlos0/env/v11"
 	"github.com/charmbracelet/log"
 	_ "github.com/joho/godotenv/autoload"
+
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/auth"
 )
 
 type ServiceName string
@@ -40,4 +42,32 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	return cfg, err
+}
+
+// LoadWithCredentials загружает конфигурацию из файла учетных данных или переменных окружения
+func LoadWithCredentials() (*Config, error) {
+	cfg := &Config{}
+
+	// Сначала пытаемся загрузить из файла учетных данных
+	credentialsManager := auth.NewCredentialsManager()
+	if credentialsManager.HasCredentials() {
+		creds, err := credentialsManager.LoadCredentials()
+		if err == nil {
+			// Устанавливаем значения из файла конфигурации
+			cfg.IAMKeyID = creds.IAMKeyID
+			cfg.IAMSecret = creds.IAMSecretKey
+			cfg.IAMEndpoint = creds.IAMEndpoint
+			cfg.ProjectID = creds.ProjectID
+			cfg.CustomerID = creds.CustomerID
+		}
+	}
+
+	// Затем парсим переменные окружения (они имеют приоритет над файлом)
+	err := env.Parse(cfg)
+	if err != nil {
+		log.Errorf("Failed to parse environment variables: %+v", err)
+		return nil, err
+	}
+
+	return cfg, nil
 }

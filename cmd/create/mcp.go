@@ -3,7 +3,6 @@ package create
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -35,8 +34,14 @@ CI/CD пайплайнами и документацией.
 		// Создаем обработчик ошибок
 		errorHandler := errors.NewHandler()
 
+		// Get project name from arguments if provided
+		var defaultProjectName string
+		if len(args) > 0 {
+			defaultProjectName = args[0]
+		}
+
 		// Always use full-screen TUI form for better UX
-		formData, err := ui.RunProjectForm("mcp")
+		formData, err := ui.RunProjectForm("mcp", defaultProjectName)
 		if err != nil {
 			appErr := errorHandler.WrapUserError(err, "FORM_ERROR", "Ошибка при заполнении формы")
 			fmt.Println(errorHandler.Handle(appErr))
@@ -50,12 +55,7 @@ CI/CD пайплайнами и документацией.
 			os.Exit(1)
 		}
 
-		targetPath := formData.ProjectPath
-		if targetPath == "" {
-			targetPath = projectName
-		} else {
-			targetPath = filepath.Join(targetPath, projectName)
-		}
+		targetPath := projectName
 
 		author := formData.Author
 		pythonVersion := "3.9" // Fixed version
@@ -108,7 +108,7 @@ CI/CD пайплайнами и документацией.
 			Foreground(lipgloss.Color("240")).
 			Render("Создание проекта..."))
 
-		if err := scaffolderInstance.CreateProjectWithOptions("mcp", projectName, targetPath, cicdTypeStr, "", options); err != nil {
+		if err := scaffolderInstance.CreateProjectWithOptions("mcp", projectName, targetPath, cicdTypeStr, "", "none", "none", options); err != nil {
 			appErr := errorHandler.WrapFileSystemError(err, "PROJECT_CREATION_FAILED", "Ошибка создания проекта MCP")
 			appErr = appErr.WithSuggestions(
 				"Проверьте права доступа к директории: ls -la "+targetPath,

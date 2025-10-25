@@ -64,7 +64,7 @@ jobs:
     environment: production
     
     steps:
-    - name: Deploy {{.ProjectName}} MCP Server to production
+    - name: Deploy {{.ProjectName}} ADK Agent to production
       run: |
-        echo "Deploying {{.ProjectName}} MCP Server to production"
+        echo "Deploying {{.ProjectName}} ADK Agent to production"
         echo "Image: ghcr.io/${{ github.repository }}:${{ github.sha }}"

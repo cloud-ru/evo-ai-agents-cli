@@ -40,7 +40,7 @@ var configCmd = &cobra.Command{
 			appErr := errorHandler.WrapFileSystemError(err, "CREDENTIALS_LOAD_FAILED", "Ошибка загрузки учетных данных")
 			appErr = appErr.WithSuggestions(
 				"Попробуйте перелогиниться: ai-agents-cli auth logout && ai-agents-cli auth login",
-				"Проверьте права доступа к файлу: " + credentialsManager.GetCredentialsPath(),
+				"Проверьте права доступа к файлу: "+credentialsManager.GetCredentialsPath(),
 				"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
 			)
 			fmt.Println(errorHandler.HandlePlain(appErr))
@@ -49,7 +49,6 @@ var configCmd = &cobra.Command{
 
 		// Показываем текущие настройки
 		fmt.Println("🔧 Текущие настройки аутентификации:")
-		fmt.Printf("📧 Email: %s\n", creds.UserEmail)
 		fmt.Printf("🔑 Key ID: %s\n", maskString(creds.IAMKeyID))
 		fmt.Printf("🌐 Endpoint: %s\n", creds.IAMEndpoint)
 		fmt.Printf("⏰ Последний вход: %s\n", creds.LastLogin)
@@ -58,8 +57,10 @@ var configCmd = &cobra.Command{
 		// Показываем переменные окружения
 		fmt.Println("🔍 Текущие переменные окружения:")
 		keyID := os.Getenv("IAM_KEY_ID")
-		secretKey := os.Getenv("IAM_SECRET_KEY")
+		secretKey := os.Getenv("IAM_SECRET") // API клиент использует IAM_SECRET
 		endpoint := os.Getenv("IAM_ENDPOINT")
+		projectID := os.Getenv("PROJECT_ID")
+		customerID := os.Getenv("CUSTOMER_ID")
 
 		if keyID != "" {
 			fmt.Printf("✅ IAM_KEY_ID: %s\n", maskString(keyID))
@@ -68,15 +69,27 @@ var configCmd = &cobra.Command{
 		}
 
 		if secretKey != "" {
-			fmt.Printf("✅ IAM_SECRET_KEY: %s\n", maskString(secretKey))
+			fmt.Printf("✅ IAM_SECRET: %s\n", maskString(secretKey))
 		} else {
-			fmt.Println("❌ IAM_SECRET_KEY: не установлена")
+			fmt.Println("❌ IAM_SECRET: не установлена")
 		}
 
 		if endpoint != "" {
 			fmt.Printf("✅ IAM_ENDPOINT: %s\n", endpoint)
 		} else {
 			fmt.Println("❌ IAM_ENDPOINT: не установлена")
+		}
+
+		if projectID != "" {
+			fmt.Printf("✅ PROJECT_ID: %s\n", projectID)
+		} else {
+			fmt.Println("❌ PROJECT_ID: не установлена")
+		}
+
+		if customerID != "" {
+			fmt.Printf("✅ CUSTOMER_ID: %s\n", customerID)
+		} else {
+			fmt.Println("❌ CUSTOMER_ID: не установлена")
 		}
 
 		// Рекомендации

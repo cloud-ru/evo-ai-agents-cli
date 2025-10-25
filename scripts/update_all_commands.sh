@@ -56,7 +56,7 @@ update_error_handling() {
 			appErr := errorHandler.WrapAPIError(err, "API_ERROR", \1)\
 			appErr = appErr.WithSuggestions(\
 				"Проверьте переменные окружения: IAM_KEY_ID, IAM_SECRET_KEY, IAM_ENDPOINT",\
-				"Убедитесь что вы авторизованы: ai-agents-cli auth login",\
+				"Убедитесь что вы авторизованы: ai-agents-cli auth login или в папке выполнения команды лежит .env файл с перемнными выше",\
 				"Проверьте доступность API: curl -I $IAM_ENDPOINT",\
 				"Обратитесь к администратору для получения учетных данных",\
 				"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",\
@@ -69,7 +69,7 @@ update_error_handling() {
 			appErr := errorHandler.WrapAPIError(err, "API_ERROR", \1)\
 			appErr = appErr.WithSuggestions(\
 				"Проверьте переменные окружения: IAM_KEY_ID, IAM_SECRET_KEY, IAM_ENDPOINT",\
-				"Убедитесь что вы авторизованы: ai-agents-cli auth login",\
+				"Убедитесь что вы авторизованы: ai-agents-cli auth login или в папке выполнения команды лежит .env файл с перемнными выше",\
 				"Проверьте доступность API: curl -I $IAM_ENDPOINT",\
 				"Обратитесь к администратору для получения учетных данных",\
 				"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",\

@@ -66,8 +66,10 @@ var logoutCmd = &cobra.Command{
 
 		// Очищаем переменные окружения
 		os.Unsetenv("IAM_KEY_ID")
-		os.Unsetenv("IAM_SECRET_KEY")
+		os.Unsetenv("IAM_SECRET") // API клиент использует IAM_SECRET
 		os.Unsetenv("IAM_ENDPOINT")
+		os.Unsetenv("PROJECT_ID")
+		os.Unsetenv("CUSTOMER_ID")
 
 		// Показываем успешное сообщение
 		fmt.Println("✅ Успешный выход из системы!")

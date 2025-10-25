@@ -22,7 +22,7 @@ func NewContainer() *Container {
 
 	// Регистрируем конфигурацию как singleton
 	do.Provide(injector, func(i do.Injector) (*config.Config, error) {
-		return config.Load()
+		return config.LoadWithCredentials()
 	})
 
 	// Регистрируем IAM сервис как singleton

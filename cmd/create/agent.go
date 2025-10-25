@@ -3,7 +3,6 @@ package create
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -35,8 +34,14 @@ CI/CD пайплайнами и документацией.
 		// Создаем обработчик ошибок
 		errorHandler := errors.NewHandler()
 
+		// Get project name from arguments if provided
+		var defaultProjectName string
+		if len(args) > 0 {
+			defaultProjectName = args[0]
+		}
+
 		// Always use full-screen TUI form for better UX
-		formData, err := ui.RunProjectForm("agent")
+		formData, err := ui.RunProjectForm("agent", defaultProjectName)
 		if err != nil {
 			appErr := errorHandler.WrapUserError(err, "FORM_ERROR", "Ошибка при заполнении формы")
 			fmt.Println(errorHandler.Handle(appErr))
@@ -50,12 +55,7 @@ CI/CD пайплайнами и документацией.
 			os.Exit(1)
 		}
 
-		targetPath := formData.ProjectPath
-		if targetPath == "" {
-			targetPath = projectName
-		} else {
-			targetPath = filepath.Join(targetPath, projectName)
-		}
+		targetPath := projectName
 
 		author := formData.Author
 		framework := formData.Framework
@@ -96,8 +96,12 @@ CI/CD пайплайнами и документацией.
 		}
 		scaffolderInstance := scaffolder.NewScaffolderWithConfig(config)
 
-		// Validate template
-		if err := scaffolderInstance.ValidateTemplate("agent"); err != nil {
+		// Validate template based on framework
+		templateName := "agent"
+		if formData.Framework != "" {
+			templateName = fmt.Sprintf("agent-frameworks/%s", formData.Framework)
+		}
+		if err := scaffolderInstance.ValidateTemplate(templateName); err != nil {
 			appErr := errorHandler.WrapTemplateError(err, "TEMPLATE_VALIDATION_FAILED", "Ошибка валидации шаблона агента")
 			fmt.Println(errorHandler.Handle(appErr))
 			os.Exit(1)
@@ -108,7 +112,7 @@ CI/CD пайплайнами и документацией.
 			Foreground(lipgloss.Color("240")).
 			Render("Создание проекта..."))
 
-		if err := scaffolderInstance.CreateProjectWithOptions("agent", projectName, targetPath, cicdTypeStr, framework, options); err != nil {
+		if err := scaffolderInstance.CreateProjectWithOptions("agent", projectName, targetPath, cicdTypeStr, framework, formData.DatabaseType, formData.ExternalAPIKeys, options); err != nil {
 			appErr := errorHandler.WrapFileSystemError(err, "PROJECT_CREATION_FAILED", "Ошибка создания проекта агента")
 			appErr = appErr.WithSuggestions(
 				"Проверьте права доступа к директории: ls -la "+targetPath,

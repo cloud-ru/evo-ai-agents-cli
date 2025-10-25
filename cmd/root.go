@@ -6,7 +6,6 @@ import (
 	"github.com/charmbracelet/log"
 	authCmd "github.com/cloud-ru/evo-ai-agents-cli/cmd/auth"
 	"github.com/cloud-ru/evo-ai-agents-cli/cmd/create"
-	"github.com/cloud-ru/evo-ai-agents-cli/internal/auth"
 	"github.com/spf13/cobra"
 )
 
@@ -50,11 +49,6 @@ var RootCMD = &cobra.Command{
 
 		log.SetDefault(logger)
 		log.Debug("AI Agents CLI запущен", "version", "1.0.0", "verbose", verbose)
-		
-		// Инициализируем учетные данные
-		if err := auth.InitCredentials(); err != nil {
-			log.Debug("Не удалось инициализировать учетные данные", "error", err)
-		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		// Показываем справку если нет аргументов

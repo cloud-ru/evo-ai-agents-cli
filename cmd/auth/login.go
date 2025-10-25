@@ -40,53 +40,75 @@ var loginCmd = &cobra.Command{
 			IAMKeyID     string
 			IAMSecretKey string
 			IAMEndpoint  string
+			ProjectID    string
+			CustomerID   string
 		}
 
-		// Устанавливаем значения по умолчанию только в dev режиме
-		if devMode {
-			loginData.IAMEndpoint = "https://iam.api.cloud.ru"
+		// Устанавливаем значение по умолчанию
+		loginData.IAMEndpoint = "https://iam.api.cloud.ru"
+
+		// Создаем поля формы
+		fields := []huh.Field{
+			huh.NewInput().
+				Title("🔑 IAM Key ID").
+				Description("Введите ваш IAM Key ID").
+				Value(&loginData.IAMKeyID).
+				Validate(func(str string) error {
+					if str == "" {
+						return errors.ValidationError("MISSING_KEY_ID", "IAM Key ID обязателен")
+					}
+					return nil
+				}),
+
+			huh.NewInput().
+				Title("🔐 IAM Secret Key").
+				Description("Введите ваш IAM Secret Key").
+				Value(&loginData.IAMSecretKey).
+				Password(true).
+				Validate(func(str string) error {
+					if str == "" {
+						return errors.ValidationError("MISSING_SECRET_KEY", "IAM Secret Key обязателен")
+					}
+					return nil
+				}),
+
+			huh.NewInput().
+				Title("📋 Project ID").
+				Description("Введите Project ID (обязательно)").
+				Value(&loginData.ProjectID).
+				Validate(func(str string) error {
+					if str == "" {
+						return errors.ValidationError("MISSING_PROJECT_ID", "Project ID обязателен")
+					}
+					return nil
+				}),
+
+			huh.NewInput().
+				Title("👤 Customer ID").
+				Description("Введите Customer ID (опционально)").
+				Value(&loginData.CustomerID),
+		}
+
+		// Добавляем поле endpoint только если НЕ в dev режиме
+		if !devMode {
+			fields = append(fields, huh.NewInput().
+				Title("🌐 IAM Endpoint").
+				Description("Введите IAM Endpoint URL").
+				Value(&loginData.IAMEndpoint).
+				Validate(func(str string) error {
+					if str == "" {
+						return errors.ValidationError("MISSING_ENDPOINT", "IAM Endpoint обязателен")
+					}
+					if !strings.HasPrefix(str, "http") {
+						return errors.ValidationError("INVALID_ENDPOINT", "Endpoint должен начинаться с http:// или https://")
+					}
+					return nil
+				}))
 		}
 
 		// Простая форма без лишних вопросов
 		form := huh.NewForm(
-			huh.NewGroup(
-				huh.NewInput().
-					Title("🔑 IAM Key ID").
-					Description("Введите ваш IAM Key ID").
-					Value(&loginData.IAMKeyID).
-					Validate(func(str string) error {
-						if str == "" {
-							return errors.ValidationError("MISSING_KEY_ID", "IAM Key ID обязателен")
-						}
-						return nil
-					}),
-
-				huh.NewInput().
-					Title("🔐 IAM Secret Key").
-					Description("Введите ваш IAM Secret Key").
-					Value(&loginData.IAMSecretKey).
-					Password(true).
-					Validate(func(str string) error {
-						if str == "" {
-							return errors.ValidationError("MISSING_SECRET_KEY", "IAM Secret Key обязателен")
-						}
-						return nil
-					}),
-
-				huh.NewInput().
-					Title("🌐 IAM Endpoint").
-					Description("Введите IAM Endpoint URL").
-					Value(&loginData.IAMEndpoint).
-					Validate(func(str string) error {
-						if str == "" {
-							return errors.ValidationError("MISSING_ENDPOINT", "IAM Endpoint обязателен")
-						}
-						if !strings.HasPrefix(str, "http") {
-							return errors.ValidationError("INVALID_ENDPOINT", "Endpoint должен начинаться с http:// или https://")
-						}
-						return nil
-					}),
-			),
+			huh.NewGroup(fields...),
 		).WithTheme(huh.ThemeCharm()).
 			WithWidth(120).
 			WithHeight(40)
@@ -102,6 +124,8 @@ var loginCmd = &cobra.Command{
 			IAMKeyID:     loginData.IAMKeyID,
 			IAMSecretKey: loginData.IAMSecretKey,
 			IAMEndpoint:  loginData.IAMEndpoint,
+			ProjectID:    loginData.ProjectID,
+			CustomerID:   loginData.CustomerID,
 			LastLogin:    time.Now().Format("2006-01-02 15:04:05"),
 		}
 
@@ -129,6 +153,10 @@ var loginCmd = &cobra.Command{
 		fmt.Printf("✅ Успешный вход в систему!\n")
 		fmt.Printf("🔑 Key ID: %s\n", maskString(loginData.IAMKeyID))
 		fmt.Printf("🌐 Endpoint: %s\n", loginData.IAMEndpoint)
+		fmt.Printf("📋 Project ID: %s\n", loginData.ProjectID)
+		if loginData.CustomerID != "" {
+			fmt.Printf("👤 Customer ID: %s\n", loginData.CustomerID)
+		}
 		fmt.Printf("💡 Теперь вы можете использовать команды без указания переменных окружения!\n")
 	},
 }
