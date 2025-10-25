@@ -29,9 +29,9 @@ func NewCredentialsManager() *CredentialsManager {
 		// Fallback на текущую директорию
 		homeDir = "."
 	}
-	
+
 	credentialsPath := filepath.Join(homeDir, ".ai-agents-cli", "credentials.json")
-	
+
 	return &CredentialsManager{
 		credentialsPath: credentialsPath,
 	}

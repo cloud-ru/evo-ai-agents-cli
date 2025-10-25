@@ -26,7 +26,7 @@ var statusCmd = &cobra.Command{
 		// Создаем менеджер учетных данных
 		credentialsManager := auth.NewCredentialsManager()
 
-		fmt.Println("🔍 Проверка статуса аутентификации...\n")
+		fmt.Println("🔍 Проверка статуса аутентификации...")
 
 		// Проверяем сохраненные учетные данные
 		if !credentialsManager.HasCredentials() {
@@ -48,65 +48,22 @@ var statusCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// Показываем информацию о сохраненных учетных данных
+		// Простая проверка статуса
 		fmt.Println("✅ Учетные данные найдены:")
-		fmt.Printf("📧 Email: %s\n", creds.UserEmail)
 		fmt.Printf("🔑 Key ID: %s\n", maskString(creds.IAMKeyID))
 		fmt.Printf("🌐 Endpoint: %s\n", creds.IAMEndpoint)
 		fmt.Printf("⏰ Последний вход: %s\n", creds.LastLogin)
-		fmt.Printf("📁 Файл: %s\n\n", credentialsManager.GetCredentialsPath())
 
 		// Проверяем переменные окружения
-		fmt.Println("🔍 Проверка переменных окружения:")
-		
 		keyID := os.Getenv("IAM_KEY_ID")
 		secretKey := os.Getenv("IAM_SECRET_KEY")
 		endpoint := os.Getenv("IAM_ENDPOINT")
 
-		if keyID != "" {
-			fmt.Printf("✅ IAM_KEY_ID: %s\n", maskString(keyID))
+		if keyID != "" && secretKey != "" && endpoint != "" {
+			fmt.Println("\n✅ Переменные окружения установлены - можете использовать команды!")
 		} else {
-			fmt.Println("❌ IAM_KEY_ID: не установлена")
-		}
-
-		if secretKey != "" {
-			fmt.Printf("✅ IAM_SECRET_KEY: %s\n", maskString(secretKey))
-		} else {
-			fmt.Println("❌ IAM_SECRET_KEY: не установлена")
-		}
-
-		if endpoint != "" {
-			fmt.Printf("✅ IAM_ENDPOINT: %s\n", endpoint)
-		} else {
-			fmt.Println("❌ IAM_ENDPOINT: не установлена")
-		}
-
-		// Проверяем соответствие переменных окружения сохраненным учетным данным
-		fmt.Println("\n🔍 Проверка соответствия:")
-		if keyID == creds.IAMKeyID {
-			fmt.Println("✅ IAM_KEY_ID соответствует сохраненным данным")
-		} else {
-			fmt.Println("⚠️  IAM_KEY_ID не соответствует сохраненным данным")
-		}
-
-		if secretKey == creds.IAMSecretKey {
-			fmt.Println("✅ IAM_SECRET_KEY соответствует сохраненным данным")
-		} else {
-			fmt.Println("⚠️  IAM_SECRET_KEY не соответствует сохраненным данным")
-		}
-
-		if endpoint == creds.IAMEndpoint {
-			fmt.Println("✅ IAM_ENDPOINT соответствует сохраненным данным")
-		} else {
-			fmt.Println("⚠️  IAM_ENDPOINT не соответствует сохраненным данным")
-		}
-
-		// Рекомендации
-		fmt.Println("\n💡 Рекомендации:")
-		if keyID == "" || secretKey == "" || endpoint == "" {
-			fmt.Println("🔄 Для установки переменных окружения выполните: ai-agents-cli auth login")
-		} else {
-			fmt.Println("✅ Все настроено корректно! Можете использовать команды без дополнительной настройки.")
+			fmt.Println("\n❌ Переменные окружения не установлены")
+			fmt.Println("💡 Выполните: ai-agents-cli auth login")
 		}
 	},
 }

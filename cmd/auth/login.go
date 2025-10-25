@@ -31,63 +31,17 @@ var loginCmd = &cobra.Command{
 		// Создаем менеджер учетных данных
 		credentialsManager := auth.NewCredentialsManager()
 
-		// Проверяем, есть ли уже сохраненные учетные данные
-		if credentialsManager.HasCredentials() {
-			fmt.Println("🔐 Найдены сохраненные учетные данные")
-			
-			// Загружаем существующие учетные данные
-			creds, err := credentialsManager.LoadCredentials()
-			if err != nil {
-				appErr := errorHandler.WrapFileSystemError(err, "CREDENTIALS_LOAD_FAILED", "Ошибка загрузки учетных данных")
-				appErr = appErr.WithSuggestions(
-					"Попробуйте удалить старые учетные данные: ai-agents-cli auth logout",
-					"Проверьте права доступа к файлу: " + credentialsManager.GetCredentialsPath(),
-					"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
-				)
-				fmt.Println(errorHandler.HandlePlain(appErr))
-				os.Exit(1)
-			}
-
-			// Показываем информацию о текущих учетных данных
-			fmt.Printf("📧 Email: %s\n", creds.UserEmail)
-			fmt.Printf("🔑 Key ID: %s\n", maskString(creds.IAMKeyID))
-			fmt.Printf("🌐 Endpoint: %s\n", creds.IAMEndpoint)
-			fmt.Printf("⏰ Последний вход: %s\n", creds.LastLogin)
-			
-			// Спрашиваем, хочет ли пользователь перелогиниться
-			var shouldRelogin bool
-			form := huh.NewForm(
-				huh.NewGroup(
-					huh.NewConfirm().
-						Title("🔄 Перелогиниться?").
-						Description("Хотите войти с новыми учетными данными?").
-						Value(&shouldRelogin),
-				),
-			).WithTheme(huh.ThemeCharm())
-
-			if err := form.Run(); err != nil {
-				appErr := errorHandler.WrapUserError(err, "FORM_ERROR", "Ошибка заполнения формы")
-				fmt.Println(errorHandler.HandlePlain(appErr))
-				os.Exit(1)
-			}
-
-			if !shouldRelogin {
-				fmt.Println("✅ Используем существующие учетные данные")
-				return
-			}
-		}
-
-		// Запрашиваем новые учетные данные
+		// Простая форма входа
 		var loginData struct {
 			IAMKeyID     string
 			IAMSecretKey string
 			IAMEndpoint  string
-			UserEmail    string
 		}
 
 		// Устанавливаем значения по умолчанию
 		loginData.IAMEndpoint = "https://api.cloud.ru"
 
+		// Простая форма без лишних вопросов
 		form := huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().
@@ -126,11 +80,6 @@ var loginCmd = &cobra.Command{
 						}
 						return nil
 					}),
-
-				huh.NewInput().
-					Title("📧 Email (опционально)").
-					Description("Введите ваш email для идентификации").
-					Value(&loginData.UserEmail),
 			),
 		).WithTheme(huh.ThemeCharm()).
 			WithWidth(120).
@@ -147,7 +96,6 @@ var loginCmd = &cobra.Command{
 			IAMKeyID:     loginData.IAMKeyID,
 			IAMSecretKey: loginData.IAMSecretKey,
 			IAMEndpoint:  loginData.IAMEndpoint,
-			UserEmail:    loginData.UserEmail,
 			LastLogin:    time.Now().Format("2006-01-02 15:04:05"),
 		}
 
@@ -171,24 +119,11 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// Показываем успешное сообщение
-		successStyle := fmt.Sprintf(`
-✅ Успешный вход в систему!
-
-📧 Email: %s
-🔑 Key ID: %s
-🌐 Endpoint: %s
-⏰ Время входа: %s
-
-💡 Теперь вы можете использовать команды без указания переменных окружения!
-`, 
-			loginData.UserEmail,
-			maskString(loginData.IAMKeyID),
-			loginData.IAMEndpoint,
-			creds.LastLogin,
-		)
-
-		fmt.Println(successStyle)
+		// Простое успешное сообщение
+		fmt.Printf("✅ Успешный вход в систему!\n")
+		fmt.Printf("🔑 Key ID: %s\n", maskString(loginData.IAMKeyID))
+		fmt.Printf("🌐 Endpoint: %s\n", loginData.IAMEndpoint)
+		fmt.Printf("💡 Теперь вы можете использовать команды без указания переменных окружения!\n")
 	},
 }
 

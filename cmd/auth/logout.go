@@ -47,11 +47,9 @@ var logoutCmd = &cobra.Command{
 		}
 
 		// Показываем информацию о том, что будет удалено
-		fmt.Printf("🔐 Удаляем учетные данные для:\n")
-		fmt.Printf("📧 Email: %s\n", creds.UserEmail)
+		fmt.Printf("🔐 Удаляем учетные данные:\n")
 		fmt.Printf("🔑 Key ID: %s\n", maskString(creds.IAMKeyID))
 		fmt.Printf("🌐 Endpoint: %s\n", creds.IAMEndpoint)
-		fmt.Printf("⏰ Последний вход: %s\n\n", creds.LastLogin)
 
 		// Удаляем учетные данные
 		if err := credentialsManager.DeleteCredentials(); err != nil {

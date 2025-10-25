@@ -10,42 +10,19 @@ import (
 func InitCredentials() error {
 	credentialsManager := NewCredentialsManager()
 	
-	// Проверяем, есть ли сохраненные учетные данные
-	if !credentialsManager.HasCredentials() {
-		// Если нет сохраненных учетных данных, проверяем переменные окружения
-		keyID := os.Getenv("IAM_KEY_ID")
-		secretKey := os.Getenv("IAM_SECRET_KEY")
-		endpoint := os.Getenv("IAM_ENDPOINT")
-		
-		// Если переменные окружения установлены, сохраняем их
-		if keyID != "" && secretKey != "" && endpoint != "" {
-			creds := &Credentials{
-				IAMKeyID:     keyID,
-				IAMSecretKey: secretKey,
-				IAMEndpoint:  endpoint,
-				UserEmail:    os.Getenv("USER_EMAIL"),
-			}
-			
-			if err := credentialsManager.SaveCredentials(creds); err != nil {
-				// Не критично, если не удалось сохранить
-				return nil
-			}
+	// Если есть сохраненные учетные данные, загружаем их
+	if credentialsManager.HasCredentials() {
+		creds, err := credentialsManager.LoadCredentials()
+		if err != nil {
+			// Если не удалось загрузить, не критично
+			return nil
 		}
 		
-		return nil
+		// Устанавливаем переменные окружения
+		os.Setenv("IAM_KEY_ID", creds.IAMKeyID)
+		os.Setenv("IAM_SECRET_KEY", creds.IAMSecretKey)
+		os.Setenv("IAM_ENDPOINT", creds.IAMEndpoint)
 	}
-	
-	// Загружаем сохраненные учетные данные
-	creds, err := credentialsManager.LoadCredentials()
-	if err != nil {
-		// Если не удалось загрузить, не критично
-		return nil
-	}
-	
-	// Устанавливаем переменные окружения
-	os.Setenv("IAM_KEY_ID", creds.IAMKeyID)
-	os.Setenv("IAM_SECRET_KEY", creds.IAMSecretKey)
-	os.Setenv("IAM_ENDPOINT", creds.IAMEndpoint)
 	
 	return nil
 }
