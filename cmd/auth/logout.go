@@ -38,7 +38,7 @@ var logoutCmd = &cobra.Command{
 		if err != nil {
 			appErr := errorHandler.WrapFileSystemError(err, "CREDENTIALS_LOAD_FAILED", "Ошибка загрузки учетных данных")
 			appErr = appErr.WithSuggestions(
-				"Попробуйте удалить файл вручную: " + credentialsManager.GetCredentialsPath(),
+				"Попробуйте удалить файл вручную: "+credentialsManager.GetCredentialsPath(),
 				"Проверьте права доступа к файлу",
 				"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
 			)
@@ -55,7 +55,7 @@ var logoutCmd = &cobra.Command{
 		if err := credentialsManager.DeleteCredentials(); err != nil {
 			appErr := errorHandler.WrapFileSystemError(err, "CREDENTIALS_DELETE_FAILED", "Ошибка удаления учетных данных")
 			appErr = appErr.WithSuggestions(
-				"Попробуйте удалить файл вручную: " + credentialsManager.GetCredentialsPath(),
+				"Попробуйте удалить файл вручную: "+credentialsManager.GetCredentialsPath(),
 				"Проверьте права доступа к файлу",
 				"Убедитесь что файл не заблокирован другим процессом",
 				"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",

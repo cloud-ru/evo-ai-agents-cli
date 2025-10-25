@@ -9,7 +9,7 @@ import (
 // InitCredentials инициализирует учетные данные из сохраненного файла
 func InitCredentials() error {
 	credentialsManager := NewCredentialsManager()
-	
+
 	// Если есть сохраненные учетные данные, загружаем их
 	if credentialsManager.HasCredentials() {
 		creds, err := credentialsManager.LoadCredentials()
@@ -17,13 +17,13 @@ func InitCredentials() error {
 			// Если не удалось загрузить, не критично
 			return nil
 		}
-		
+
 		// Устанавливаем переменные окружения
 		os.Setenv("IAM_KEY_ID", creds.IAMKeyID)
 		os.Setenv("IAM_SECRET_KEY", creds.IAMSecretKey)
 		os.Setenv("IAM_ENDPOINT", creds.IAMEndpoint)
 	}
-	
+
 	return nil
 }
 
@@ -32,11 +32,11 @@ func CheckCredentials() error {
 	keyID := os.Getenv("IAM_KEY_ID")
 	secretKey := os.Getenv("IAM_SECRET_KEY")
 	endpoint := os.Getenv("IAM_ENDPOINT")
-	
+
 	if keyID == "" || secretKey == "" || endpoint == "" {
 		return errors.New(errors.ErrorTypeAuthentication, errors.SeverityHigh, "MISSING_CREDENTIALS", "Учетные данные не найдены")
 	}
-	
+
 	return nil
 }
 

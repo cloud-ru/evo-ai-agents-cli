@@ -6,10 +6,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/huh"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/auth"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/errors"
-	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
+)
+
+var (
+	devMode bool
 )
 
 // loginCmd представляет команду входа в систему
@@ -23,7 +27,7 @@ var loginCmd = &cobra.Command{
 
 Примеры использования:
   ai-agents-cli auth login
-  ai-agents-cli auth login --endpoint https://api.cloud.ru`,
+  ai-agents-cli auth login --dev`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Создаем обработчик ошибок
 		errorHandler := errors.NewHandler()
@@ -38,8 +42,10 @@ var loginCmd = &cobra.Command{
 			IAMEndpoint  string
 		}
 
-		// Устанавливаем значения по умолчанию
-		loginData.IAMEndpoint = "https://api.cloud.ru"
+		// Устанавливаем значения по умолчанию только в dev режиме
+		if devMode {
+			loginData.IAMEndpoint = "https://iam.api.cloud.ru"
+		}
 
 		// Простая форма без лишних вопросов
 		form := huh.NewForm(
@@ -125,6 +131,10 @@ var loginCmd = &cobra.Command{
 		fmt.Printf("🌐 Endpoint: %s\n", loginData.IAMEndpoint)
 		fmt.Printf("💡 Теперь вы можете использовать команды без указания переменных окружения!\n")
 	},
+}
+
+func init() {
+	loginCmd.Flags().BoolVar(&devMode, "dev", false, "Режим разработки (устанавливает endpoint по умолчанию)")
 }
 
 // maskString маскирует строку для безопасности

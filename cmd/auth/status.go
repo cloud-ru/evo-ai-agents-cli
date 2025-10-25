@@ -41,7 +41,7 @@ var statusCmd = &cobra.Command{
 			appErr := errorHandler.WrapFileSystemError(err, "CREDENTIALS_LOAD_FAILED", "Ошибка загрузки учетных данных")
 			appErr = appErr.WithSuggestions(
 				"Попробуйте перелогиниться: ai-agents-cli auth logout && ai-agents-cli auth login",
-				"Проверьте права доступа к файлу: " + credentialsManager.GetCredentialsPath(),
+				"Проверьте права доступа к файлу: "+credentialsManager.GetCredentialsPath(),
 				"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
 			)
 			fmt.Println(errorHandler.HandlePlain(appErr))
