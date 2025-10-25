@@ -111,10 +111,11 @@ CI/CD пайплайнами и документацией.
 		if err := scaffolderInstance.CreateProjectWithOptions("mcp", projectName, targetPath, cicdTypeStr, "", options); err != nil {
 			appErr := errorHandler.WrapFileSystemError(err, "PROJECT_CREATION_FAILED", "Ошибка создания проекта MCP")
 			appErr = appErr.WithSuggestions(
-				"Проверьте права доступа к директории: ls -la " + targetPath,
-				"Убедитесь что директория существует: mkdir -p " + targetPath,
+				"Проверьте права доступа к директории: ls -la "+targetPath,
+				"Убедитесь что директория существует: mkdir -p "+targetPath,
 				"Проверьте свободное место на диске: df -h",
 				"Попробуйте создать проект в другой директории",
+				"📚 Документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
 			)
 			fmt.Println(errorHandler.Handle(appErr))
 			os.Exit(1)

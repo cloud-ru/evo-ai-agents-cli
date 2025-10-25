@@ -45,15 +45,15 @@ const (
 
 // AppError представляет структурированную ошибку приложения
 type AppError struct {
-	Type      ErrorType              `json:"type"`
-	Severity  Severity               `json:"severity"`
-	Code      string                 `json:"code"`
-	Message   string                 `json:"message"`
-	Details   string                 `json:"details,omitempty"`
-	Context   map[string]interface{} `json:"context,omitempty"`
-	Timestamp time.Time              `json:"timestamp"`
-	Original  error                  `json:"-"`
-	Suggestions []string             `json:"suggestions,omitempty"`
+	Type        ErrorType              `json:"type"`
+	Severity    Severity               `json:"severity"`
+	Code        string                 `json:"code"`
+	Message     string                 `json:"message"`
+	Details     string                 `json:"details,omitempty"`
+	Context     map[string]interface{} `json:"context,omitempty"`
+	Timestamp   time.Time              `json:"timestamp"`
+	Original    error                  `json:"-"`
+	Suggestions []string               `json:"suggestions,omitempty"`
 }
 
 // Error реализует интерфейс error
