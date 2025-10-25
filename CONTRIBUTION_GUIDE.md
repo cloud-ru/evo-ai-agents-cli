@@ -581,7 +581,7 @@ git push origin feature/my-feature
 
 ## 📚 Дополнительные ресурсы
 
-- [Cloud.ru AI Agents Documentation](https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution) - Официальная документация
+- [📚 Cloud.ru AI Agents Documentation](https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution) - Официальная документация по AI Agents
 - [Cobra CLI Documentation](https://cobra.dev/)
 - [Bubble Tea Documentation](https://github.com/charmbracelet/bubbletea)
 - [Huh Documentation](https://github.com/charmbracelet/huh)

@@ -228,7 +228,7 @@ go test ./...
 ## 🆘 Поддержка
 
 - 📧 Email: support@cloud.ru
-- 📖 Документация: [Cloud.ru AI Agents Documentation](https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution)
+- 📖 Документация: [📚 Cloud.ru AI Agents Documentation](https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution)
 - 🐛 Баги: [GitHub Issues](https://github.com/cloud-ru/evo-ai-agents-cli/issues)
 - 💬 Обсуждения: [GitHub Discussions](https://github.com/cloud-ru/evo-ai-agents-cli/discussions)
 

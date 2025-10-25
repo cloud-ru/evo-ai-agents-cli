@@ -222,7 +222,9 @@ func formatSimpleAppError(err *AppError) string {
 	if len(err.Suggestions) > 0 {
 		parts = append(parts, UIStyles.ErrorTitle.Render("💡 Что можно сделать:"))
 		for i, suggestion := range err.Suggestions {
-			parts = append(parts, UIStyles.ErrorDetails.Render(fmt.Sprintf("  %d. %s", i+1, suggestion)))
+			// Красиво форматируем ссылки на документацию
+			formattedSuggestion := formatSuggestion(suggestion)
+			parts = append(parts, UIStyles.ErrorDetails.Render(fmt.Sprintf("  %d. %s", i+1, formattedSuggestion)))
 		}
 	}
 
@@ -282,7 +284,9 @@ func formatPlainAppError(err *AppError) string {
 	if len(err.Suggestions) > 0 {
 		parts = append(parts, "\n💡 Что можно сделать:")
 		for i, suggestion := range err.Suggestions {
-			parts = append(parts, fmt.Sprintf("  %d. %s", i+1, suggestion))
+			// Красиво форматируем ссылки на документацию
+			formattedSuggestion := formatSuggestion(suggestion)
+			parts = append(parts, fmt.Sprintf("  %d. %s", i+1, formattedSuggestion))
 		}
 	}
 
@@ -384,4 +388,19 @@ func getSuggestionsForType(errorType ErrorType, code string) []string {
 	default:
 		return []string{"Попробуйте повторить операцию"}
 	}
+}
+
+// formatSuggestion красиво форматирует подсказки, особенно ссылки на документацию
+func formatSuggestion(suggestion string) string {
+	// Если это ссылка на документацию, делаем её более заметной
+	if strings.Contains(suggestion, "cloud.ru/docs/ai-agents") {
+		// Заменяем обычную ссылку на более красивую
+		return strings.Replace(suggestion, 
+			"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
+			"📚 Подробная документация: https://cloud.ru/docs/ai-agents/ug/index?source-platform=Evolution",
+			-1)
+	}
+	
+	// Для остальных подсказок возвращаем как есть
+	return suggestion
 }
