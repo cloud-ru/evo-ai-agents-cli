@@ -93,6 +93,16 @@ nfpms:
     formats:
       - deb
       - rpm
+docker:
+  - image_templates:
+      - "ghcr.io/cloud-ru/ai-agents-cli:{{ .Tag }}"
+      - "ghcr.io/cloud-ru/ai-agents-cli:latest"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--pull"
+    skip_push: false
+    goos: linux
+    goarch: amd64
 release:
   mode: replace
   github:
