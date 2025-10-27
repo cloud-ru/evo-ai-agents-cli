@@ -147,7 +147,25 @@ jobs:
     - name: Prepare release files
       run: |
         mkdir -p release
-        find artifacts -type f -name 'ai-agents-cli*' -exec cp {} release/ \;
+        
+        # Linux binary
+        if [ -f artifacts/ai-agents-cli-linux/ai-agents-cli ]; then
+          cp artifacts/ai-agents-cli-linux/ai-agents-cli release/ai-agents-cli-linux
+          chmod +x release/ai-agents-cli-linux
+        fi
+        
+        # macOS binary
+        if [ -f artifacts/ai-agents-cli-darwin/ai-agents-cli ]; then
+          cp artifacts/ai-agents-cli-darwin/ai-agents-cli release/ai-agents-cli-darwin
+          chmod +x release/ai-agents-cli-darwin
+        fi
+        
+        # Windows binary
+        if [ -f artifacts/ai-agents-cli-windows/ai-agents-cli.exe ]; then
+          cp artifacts/ai-agents-cli-windows/ai-agents-cli.exe release/ai-agents-cli-windows.exe
+        fi
+        
+        echo "Release files:"
         ls -lah release/
 
     - name: Create Release
