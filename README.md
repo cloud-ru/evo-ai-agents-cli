@@ -4,7 +4,7 @@
 
 [![Build Status](https://github.com/cloud-ru/evo-ai-agents-cli/workflows/CI/badge.svg)](https://github.com/cloud-ru/evo-ai-agents-cli/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Version](https://img.shields.io/badge/Go-1.24.3+-blue.svg)](https://golang.org/)
+[![Go Version](https://img.shields.io/badge/Go-1.25.2+-blue.svg)](https://golang.org/)
 [![Release](https://img.shields.io/github/v/release/cloud-ru/evo-ai-agents-cli)](https://github.com/cloud-ru/evo-ai-agents-cli/releases)
 [![GitHub stars](https://img.shields.io/github/stars/cloud-ru/evo-ai-agents-cli.svg?style=flat-square&label=Stars)](https://github.com/cloud-ru/evo-ai-agents-cli/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/cloud-ru/evo-ai-agents-cli.svg?style=flat-square&label=Forks)](https://github.com/cloud-ru/evo-ai-agents-cli/network/members)
@@ -61,16 +61,46 @@ brew install ai-agents-cli
 
 ### Ручная установка
 
+#### Linux
+
 ```bash
 # Скачайте последнюю версию
-wget https://github.com/cloud-ru/evo-ai-agents-cli/releases/latest/download/ai-agents-cli-linux-amd64.tar.gz
+wget https://github.com/cloud-ru/evo-ai-agents-cli/releases/latest/download/ai-agents-cli-linux
 
-# Распакуйте
-tar -xzf ai-agents-cli-linux-amd64.tar.gz
+# Установите
+sudo mv ai-agents-cli-linux /usr/local/bin/ai-agents-cli
+sudo chmod +x /usr/local/bin/ai-agents-cli
+
+# Проверьте установку
+ai-agents-cli --version
+```
+
+#### macOS
+
+```bash
+# Скачайте последнюю версию
+curl -L https://github.com/cloud-ru/evo-ai-agents-cli/releases/latest/download/ai-agents-cli-darwin -o ai-agents-cli
 
 # Установите
 sudo mv ai-agents-cli /usr/local/bin/
-chmod +x /usr/local/bin/ai-agents-cli
+sudo chmod +x /usr/local/bin/ai-agents-cli
+
+# Проверьте установку
+ai-agents-cli --version
+```
+
+#### Windows
+
+```powershell
+# Скачайте последнюю версию
+Invoke-WebRequest -Uri "https://github.com/cloud-ru/evo-ai-agents-cli/releases/latest/download/ai-agents-cli-windows.exe" -OutFile "ai-agents-cli.exe"
+
+# Переместите в директорию в PATH (например, C:\Windows\System32 или создайте свою)
+Move-Item ai-agents-cli.exe C:\Program Files\ai-agents-cli\
+
+# Добавьте в PATH если нужно
+# Проверьте установку
+ai-agents-cli --version
 ```
 
 ### Сборка из исходников
