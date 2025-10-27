@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -11,7 +11,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: macos-latest
+            platform: darwin
+          - os: windows-latest
+            platform: windows
         
     steps:
     - name: Checkout code
@@ -23,11 +30,112 @@ jobs:
         go-version: '1.24.3'
         cache: true
 
-    - name: Download dependencies
-      run: go mod download
+    - name: Build binary
+      run: |
+        if [ "${{ matrix.platform }}" = "windows" ]; then
+          go build -o ai-agents-cli.exe .
+        else
+          go build -o ai-agents-cli .
+        fi
 
-    - name: Build
-      run: go build -v ./...
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ai-agents-cli-${{ matrix.platform }}
+        path: |
+          ai-agents-cli*
+          !ai-agents-cli*.zip
+        retention-days: 30
 
-    - name: Run tests
-      run: go test -v ./...
+  docker:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      packages: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/cloud-ru/ai-agents-cli
+        tags: |
+          type=ref,event=branch
+          type=sha,prefix=commit-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build, docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24.3'
+        cache: true
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: ai-agents-cli-*
+        path: artifacts/
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        draft: false
+        prerelease: false
+        files: artifacts/**
+        body: |
+          ## Build from main
+          
+          Automated build from main branch.
+          
+          ### Installation
+          
+          Download and extract the archive for your platform:
+          - Linux: `ai-agents-cli-linux`
+          - macOS: `ai-agents-cli-darwin`
+          - Windows: `ai-agents-cli-windows.exe`
+          
+          ### Docker
+          
+          ```bash
+          docker pull ghcr.io/cloud-ru/ai-agents-cli:latest
+          ```
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
