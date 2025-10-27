@@ -39,20 +39,20 @@
 
 ## 🚀 Установка 
 
-### Windows (winget)  (comming soon)
+### Windows (winget)  (Скоро)
 
 ```bash
 winget install CloudRu.AIAgentsCLI
 ```
 
-### Windows (Scoop) (comming soon)
+### Windows (Scoop) (Скоро)
 
 ```powershell
 scoop bucket add cloud-ru https://github.com/cloud-ru/scoop-bucket
 scoop install ai-agents-cli
 ```
 
-### macOS/Linux (Homebrew) (comming soon)
+### macOS/Linux (Homebrew) (Скоро)
 
 ```bash
 brew tap cloud-ru/evo-ai-agents-cli

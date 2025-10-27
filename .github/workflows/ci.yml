@@ -103,14 +103,34 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Create semantic version tag
-      id: semantic_version
-      uses: mathieudutour/github-tag-action@v6.1
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        default_bump: patch
-        release_branches: main
-        tag_prefix: v
+    - name: Get latest tag or set default
+      id: get_version
+      run: |
+        # Получаем последний тег
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        
+        if [ -z "$LATEST_TAG" ]; then
+          # Если тегов нет, устанавливаем начальную версию
+          echo "new_version=0.5.0" >> $GITHUB_OUTPUT
+          echo "new_tag=v0.5.0" >> $GITHUB_OUTPUT
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag v0.5.0
+          git push origin v0.5.0
+        else
+          # Увеличиваем patch версию
+          VERSION=${LATEST_TAG#v}
+          IFS='.' read -r major minor patch <<< "$VERSION"
+          NEW_PATCH=$((patch + 1))
+          NEW_VERSION="$major.$minor.$NEW_PATCH"
+          NEW_TAG="v$NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
+        fi
 
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -124,20 +144,23 @@ jobs:
         pattern: ai-agents-cli-*
         path: artifacts/
 
+    - name: Prepare release files
+      run: |
+        mkdir -p release
+        find artifacts -type f -name 'ai-agents-cli*' -exec cp {} release/ \;
+        ls -lah release/
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.semantic_version.outputs.new_tag }}
+        tag_name: ${{ steps.get_version.outputs.new_tag }}
         draft: false
         prerelease: false
-        files: artifacts/**
+        files: release/*
         body: |
-          ## Release ${{ steps.semantic_version.outputs.new_tag }}
+          ## Release ${{ steps.get_version.outputs.new_tag }}
           
           Automated build from main branch.
-          
-          ### Changes
-          ${{ steps.semantic_version.outputs.changelog }}
           
           ### Installation
           
@@ -149,7 +172,7 @@ jobs:
           ### Docker
           
           ```bash
-          docker pull ghcr.io/cloud-ru/ai-agents-cli:${{ steps.semantic_version.outputs.new_version }}
+          docker pull ghcr.io/cloud-ru/ai-agents-cli:${{ steps.get_version.outputs.new_version }}
           docker pull ghcr.io/cloud-ru/ai-agents-cli:latest
           ```
       env:
