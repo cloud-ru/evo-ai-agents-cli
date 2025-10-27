@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schemas/schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cloud-ru/evo-ai-agents-cli/refs/heads/main/schemas/schema.json?token=GHSAT0AAAAAADFVHSI2NPNFSMGLQ5FROLA42H7A23A
 # =============================================================================
 # Пример конфигурации AI агентов для развертывания
 # =============================================================================
@@ -87,7 +87,8 @@ agents:
       arImageUri: "cr.cloud.ru/prod/agents/data-analyst:v2.1"
     
     options:
-      systemPrompt: "Ты - аналитик данных, специализируешься на обработке больших объемов информации"
+      systemPrompt: |
+        "Ты - аналитик данных, специализируешься на обработке больших объемов информации"
       
       llm:
         # Используем Claude 3.5 Sonnet

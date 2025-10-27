@@ -63,11 +63,11 @@ var deleteCmd = &cobra.Command{
 		fmt.Println(successStyle.Render("✅ Операция удаления реестра запущена"))
 		fmt.Println()
 		fmt.Printf("ID операции: %s\n", operation.ID)
-		
+
 		if operation.Description != "" {
 			fmt.Printf("Описание: %s\n", operation.Description)
 		}
-		
+
 		if operation.Done {
 			fmt.Println("Статус: Завершено")
 		} else {

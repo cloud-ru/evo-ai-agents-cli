@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schemas/schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cloud-ru/evo-ai-agents-cli/refs/heads/main/schemas/schema.json?token=GHSAT0AAAAAADFVHSI2NPNFSMGLQ5FROLA42H7A23A
 # =============================================================================
 # Пример конфигурации MCP (Model Context Protocol) серверов
 # =============================================================================
@@ -28,12 +28,6 @@ mcp-servers:
     # TCP порты, которые будут выставлены наружу (максимум 10)
     exposedPorts:
       - 8080
-    
-    # Конфигурационные опции (можно добавлять любые кастомные опции)
-    options:
-      timeout: 30
-      retries: 3
-      debug: true
     
     # Переменные окружения
     environmentOptions:
