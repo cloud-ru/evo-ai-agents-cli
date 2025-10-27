@@ -100,3 +100,45 @@ jobs:
         git add .github/package-managers/winget/ai-agents-cli.yaml
         git commit -m "Update Winget manifest to ${{ steps.release.outputs.VERSION }}" || exit 0
         git push
+
+  update-scoop:
+    runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Get release info
+      id: release
+      run: |
+        echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Download Windows binary
+      run: |
+        mkdir -p assets
+        cd assets
+        wget -q "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/${{ steps.release.outputs.TAG_NAME }}/ai-agents-cli-windows-amd64.zip"
+
+    - name: Calculate Windows checksum
+      id: checksums
+      run: |
+        echo "WINDOWS_AMD64_SHA=$(sha256sum assets/ai-agents-cli-windows-amd64.zip | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+
+    - name: Update Scoop manifest
+      run: |
+        # Update the manifest with new version and checksum
+        sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${{ steps.release.outputs.VERSION }}\"/" .github/package-managers/scoop/ai-agents-cli.json
+        sed -i "s/\"hash\": \"[^\"]*\"/\"hash\": \"${{ steps.checksums.outputs.WINDOWS_AMD64_SHA }}\"/" .github/package-managers/scoop/ai-agents-cli.json
+        
+        # Update URL
+        sed -i "s|\"url\": \"https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/[^\"]*|\"url\": \"https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/${{ steps.release.outputs.TAG_NAME }}/ai-agents-cli-windows-amd64.zip|" .github/package-managers/scoop/ai-agents-cli.json
+
+    - name: Commit updated manifest
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .github/package-managers/scoop/ai-agents-cli.json
+        git commit -m "Update Scoop manifest to ${{ steps.release.outputs.VERSION }}" || exit 0
+        git push

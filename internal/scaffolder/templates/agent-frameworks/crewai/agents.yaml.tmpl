@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cloud-ru/evo-ai-agents-cli/main/schemas/schema.json
+
+agents:
+  - name: "{{.ProjectName}}"
+    description: "AI агент на базе CrewAI для командной работы"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    imageSource:
+      arImageUri: "cr.cloud.ru/prod/agents/{{.ProjectName}}:latest"
+    options:
+      systemPrompt: "You are part of a CrewAI agent crew designed for collaborative task completion"
+      llm:
+        foundationModels:
+          modelName: "gpt-4o"
+      env:
+        rawEnvs:
+          OPENAI_API_KEY: "${OPENAI_API_KEY}"
+          CREWAI_ENV: "production"
+      scaling:
+        minScale: 1
+        maxScale: 10
+        isScaleUpAllSystem: false
+        isKeepAlive: true
+    integrationOptions:
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_BEARER"
+      logging:
+        isEnabledLogging: true
+        logGroupId: "123e4567-e89b-12d3-a456-426614174000"
+

@@ -163,7 +163,7 @@ var deployCmd = &cobra.Command{
 		// 2. Развертываем агентов
 		if configType == "agent" || configType == "mixed" {
 			fmt.Println(ui.FormatInfo("Deploying agents..."))
-			agentResults, err := agentDeployer.DeployAgents(ctx, configFile, deployDryRun)
+			agentResults, err := agentDeployer.DeployAgents(ctx, configFile, deployDryRun, false)
 			if err != nil {
 				log.Error("Agent deployment failed", "error", err)
 				fmt.Println(ui.FormatError("Agent deployment failed: " + err.Error()))

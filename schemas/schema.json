@@ -1,24 +1,403 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "JSON Schema for AI Agents YAML deployment configuration",
-  "description": "Deploy AI Agent Systems with yaml",
-  "additionalProperties": false,
+  "title": "Unified JSON Schema for AI Agents CLI",
+  "description": "Объединенная схема валидации для деплоя AI агентов, MCP серверов и систем агентов\nВключает: agents, mcp-servers, agent-systems и директиву !include\nОсновано на service.swagger.json",
+  "type": "object",
   "anyOf": [
     {
-      "items": true,
-      "$ref": "./includes.schema.json"
+      "type": "object",
+      "properties": {
+        "!include": {
+          "type": "string",
+          "description": "Путь к файлу для включения",
+          "pattern": "^(\\.[/\\\\])?[^/\\\\].*$"
+        }
+      },
+      "additionalProperties": true
     },
     {
-      "$ref": "./agent.schema.json"
+      "type": "object",
+      "properties": {
+        "agents": {
+          "description": "Список агентов для деплоя (минимум 1, максимум 100)",
+          "type": "array",
+          "items": { "$ref": "#/definitions/agent" },
+          "minItems": 1,
+          "maxItems": 100
+        }
+      }
     },
     {
-      "$ref": "./prompt.schema.json"
+      "type": "object",
+      "properties": {
+        "mcp-servers": {
+          "description": "Список MCP серверов для деплоя (минимум 1, максимум 100)",
+          "type": "array",
+          "items": { "$ref": "#/definitions/mcpServer" },
+          "minItems": 1,
+          "maxItems": 100
+        }
+      }
     },
     {
-      "$ref": "./mcp.schema.json"
-    },
-    {
-      "$ref": "./systems.schema.json"
+      "type": "object",
+      "properties": {
+        "agent-systems": {
+          "description": "Список систем агентов для деплоя (минимум 1, максимум 100)",
+          "type": "array",
+          "items": { "$ref": "#/definitions/agentSystem" },
+          "minItems": 1,
+          "maxItems": 100
+        }
+      }
     }
-  ]
+  ],
+  "definitions": {
+    "agent": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Уникальное имя агента в проекте (3-125 символов, строчные буквы с дефисами)",
+          "minLength": 3,
+          "maxLength": 125,
+          "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Описание агента",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "instanceTypeId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Идентификатор типа конфигурации (UUID)",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "imageSource": { "$ref": "#/definitions/agentImageSource" },
+        "options": { "$ref": "#/definitions/agentOptions" },
+        "integrationOptions": { "$ref": "#/definitions/integrationOptions" },
+        "mcpServers": {
+          "type": "array",
+          "description": "Список имен/ID MCP серверов (максимум 10)",
+          "items": { "type": "string" },
+          "maxItems": 10
+        },
+        "!include": {
+          "type": "string",
+          "description": "Путь к файлу для включения",
+          "pattern": "^(\\.[/\\\\])?[^/\\\\].*$"
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": true
+    },
+    "agentImageSource": {
+      "type": "object",
+      "description": "Источник образа контейнера для агента",
+      "properties": {
+        "arImageUri": { "type": "string", "description": "URI образа в реестре" },
+        "agentId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID агента (UUID)",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "marketplaceAgentId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID агента в маркетплейсе (UUID)",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "agentOptions": {
+      "type": "object",
+      "description": "Опции конфигурации агента",
+      "properties": {
+        "systemPrompt": { "type": "string", "description": "Системный промпт" },
+        "llm": { "$ref": "#/definitions/llmOptions" },
+        "env": { "$ref": "#/definitions/environmentOptions" },
+        "scaling": { "$ref": "#/definitions/scaling" }
+      },
+      "additionalProperties": true
+    },
+    "mcpServer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Имя MCP сервера (3-125 символов)",
+          "minLength": 3,
+          "maxLength": 125,
+          "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Описание MCP сервера",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "instanceTypeId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID типа конфигурации (UUID)",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "imageSource": { "$ref": "#/definitions/mcpImageSource" },
+        "exposedPorts": {
+          "type": "array",
+          "description": "TCP порты (максимум 10)",
+          "items": { "type": "integer", "minimum": 1, "maximum": 65535 },
+          "maxItems": 10
+        },
+        "options": {
+          "type": "object",
+          "description": "Опции конфигурации MCP сервера",
+          "additionalProperties": true
+        },
+        "environmentOptions": { "$ref": "#/definitions/environmentOptions" },
+        "scaling": { "$ref": "#/definitions/scaling" },
+        "integrationOptions": { "$ref": "#/definitions/integrationOptions" },
+        "!include": {
+          "type": "string",
+          "description": "Путь к файлу для включения",
+          "pattern": "^(\\.[/\\\\])?[^/\\\\].*$"
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": true
+    },
+    "mcpImageSource": {
+      "type": "object",
+      "description": "Источник образа контейнера для MCP сервера",
+      "properties": {
+        "arImageUri": { "type": "string", "description": "URI образа в реестре" },
+        "mcpServerId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID MCP сервера (UUID)",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "marketplaceMcpServerId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID MCP сервера в маркетплейсе (UUID)",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "agentSystem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Имя системы агентов (3-125 символов)",
+          "minLength": 3,
+          "maxLength": 125,
+          "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Описание системы агентов",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "instanceTypeId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "ID типа конфигурации (UUID)",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "agents": {
+          "type": "array",
+          "description": "Конфигурации агентов в системе (максимум 10)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "description": "Имя/ID агента" },
+              "scaling": { "$ref": "#/definitions/scaling" }
+            },
+            "additionalProperties": true
+          },
+          "minItems": 1,
+          "maxItems": 10
+        },
+        "orchestratorOptions": { "$ref": "#/definitions/orchestratorOptions" },
+        "options": { "$ref": "#/definitions/systemOptions" },
+        "integrationOptions": { "$ref": "#/definitions/integrationOptions" },
+        "!include": {
+          "type": "string",
+          "description": "Путь к файлу для включения",
+          "pattern": "^(\\.[/\\\\])?[^/\\\\].*$"
+        }
+      },
+      "required": ["name", "agents"],
+      "additionalProperties": true
+    },
+    "llmOptions": {
+      "type": "object",
+      "description": "Настройки LLM",
+      "properties": {
+        "mlInference": {
+          "type": "object",
+          "description": "Опции ML инференса",
+          "properties": {
+            "modelRunId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID запуска модели (UUID)",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "foundationModels": {
+          "type": "object",
+          "description": "Опции базовой модели",
+          "properties": {
+            "modelName": {
+              "type": "string",
+              "description": "Название модели (3-128 символов)",
+              "minLength": 3,
+              "maxLength": 128
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "environmentOptions": {
+      "type": "object",
+      "description": "Настройки переменных окружения",
+      "properties": {
+        "rawEnvs": {
+          "type": "object",
+          "description": "Сырые переменные окружения (максимум 20 пар)",
+          "additionalProperties": { "type": "string" },
+          "maxProperties": 20
+        },
+        "secretEnvs": {
+          "type": "object",
+          "description": "Переменные окружения из секретов",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "ID секрета (UUID)",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              "version": { "type": "integer", "description": "Версия секрета", "minimum": 1 }
+            },
+            "required": ["id"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "scaling": {
+      "type": "object",
+      "description": "Конфигурация масштабирования",
+      "properties": {
+        "minScale": { "type": "integer", "description": "Минимальный уровень (≥0)", "minimum": 0 },
+        "maxScale": { "type": "integer", "description": "Максимальный уровень (≤20)", "maximum": 20 },
+        "isScaleUpAllSystem": { "type": "boolean", "description": "Масштабировать всю систему" },
+        "isKeepAlive": { "type": "boolean", "description": "Поддержание активности" },
+        "keepAliveDuration": {
+          "type": "object",
+          "description": "Продолжительность поддержания активности",
+          "properties": {
+            "hours": { "type": "integer", "description": "Часы" },
+            "minutes": { "type": "integer", "description": "Минуты" },
+            "seconds": { "type": "integer", "description": "Секунды" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "integrationOptions": {
+      "type": "object",
+      "description": "Опции интеграции (auth, CORS)",
+      "properties": {
+        "authOptions": {
+          "type": "object",
+          "description": "Настройки аутентификации",
+          "properties": {
+            "isEnabled": { "type": "boolean", "description": "Включить аутентификацию" },
+            "type": {
+              "type": "string",
+              "enum": ["AUTHENTICATION_TYPE_UNKNOWN", "AUTHENTICATION_TYPE_BASIC", "AUTHENTICATION_TYPE_BEARER", "AUTHENTICATION_TYPE_API_KEY"],
+              "description": "Тип аутентификации"
+            }
+          },
+          "additionalProperties": false
+        },
+        "logging": {
+          "type": "object",
+          "description": "Настройки логирования",
+          "properties": {
+            "isEnabledLogging": { "type": "boolean", "description": "Включить логирование" },
+            "logGroupId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID группы логов (UUID)",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "autoUpdateOptions": {
+          "type": "object",
+          "description": "Настройки автообновления",
+          "properties": {
+            "isEnabled": { "type": "boolean", "description": "Включить автообновление" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "orchestratorOptions": {
+      "type": "object",
+      "description": "Опции оркестратора",
+      "properties": {
+        "systemPrompt": { "type": "string", "description": "Системный промпт оркестратора" },
+        "llm": { "$ref": "#/definitions/llmOptions" },
+        "env": { "$ref": "#/definitions/environmentOptions" },
+        "scaling": { "$ref": "#/definitions/scaling" }
+      },
+      "additionalProperties": false
+    },
+    "systemOptions": {
+      "type": "object",
+      "description": "Опции на уровне системы",
+      "properties": {
+        "observability": {
+          "type": "object",
+          "description": "Настройки наблюдаемости",
+          "properties": {
+            "isEnabled": { "type": "boolean", "description": "Включить наблюдаемость" }
+          },
+          "additionalProperties": false
+        },
+        "contextStorage": {
+          "type": "object",
+          "description": "Настройки хранилища контекста",
+          "properties": {
+            "isEnabled": { "type": "boolean", "description": "Включить хранилище контекста" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
 }

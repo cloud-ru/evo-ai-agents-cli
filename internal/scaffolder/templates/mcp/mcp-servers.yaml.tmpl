@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cloud-ru/evo-ai-agents-cli/main/schemas/schema.json
+
+mcp-servers:
+  - name: "{{.ProjectName}}"
+    description: "MCP сервер для интеграции с различными сервисами"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    imageSource:
+      arImageUri: "cr.cloud.ru/prod/mcp/{{.ProjectName}}:latest"
+    exposedPorts:
+      - 8080
+    options:
+      timeout: 30
+      retries: 3
+      debug: false
+    environmentOptions:
+      rawEnvs:
+        LOG_LEVEL: "INFO"
+        MCP_ENV: "production"
+      secretEnvs:
+        api_credentials:
+          id: "123e4567-e89b-12d3-a456-426614174000"
+          version: 1
+    scaling:
+      minScale: 1
+      maxScale: 5
+      isKeepAlive: true
+    integrationOptions:
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_API_KEY"
+      logging:
+        isEnabledLogging: true
+      autoUpdateOptions:
+        isEnabled: false
+

@@ -183,47 +183,63 @@ CLI использует цветовую схему для лучшего во�
 
 ```yaml
 mcp-servers:
-  - name: "database_mcp"
-    description: "MCP сервер для работы с PostgreSQL"
+  - name: "database-mcp"
+    description: "MCP сервер для работы с PostgreSQL базой данных"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    imageSource:
+      arImageUri: "cr.cloud.ru/prod/mcp/database-mcp:latest"
+    exposedPorts:
+      - 5432
     options:
-      host: "localhost"
-      port: 5432
-      database: "myapp"
-      username: "${DB_USER}"
-      password: "${DB_PASSWORD}"
-      ssl_mode: "require"
-      max_connections: 10
-      timeout: 30
-      
-  - name: "api_mcp"
-    description: "MCP сервер для внешних API"
-    options:
-      base_url: "https://api.example.com"
-      api_key: "${API_KEY}"
-      rate_limit: 100
-      timeout: 30
-      retries: 3
+      connection_pool_size: 20
+      query_timeout: 60
+    environmentOptions:
+      rawEnvs:
+        LOG_LEVEL: "INFO"
+      secretEnvs:
+        db_password:
+          id: "123e4567-e89b-12d3-a456-426614174000"
+          version: 1
+    scaling:
+      minScale: 2
+      maxScale: 10
+    integrationOptions:
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_BASIC"
+      logging:
+        isEnabledLogging: true
 ```
 
 ### Агенты (agents.yaml)
 
 ```yaml
 agents:
-  - name: "customer_support"
+  - name: "customer-support-agent"
     description: "AI агент для поддержки клиентов"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    imageSource:
+      arImageUri: "cr.cloud.ru/prod/agents/customer-support:latest"
     options:
-      personality: "helpful and professional"
-      response_style: "conversational"
-      max_conversation_turns: 10
-    llm_options:
-      provider: "openai"
-      model: "gpt-4"
-      temperature: 0.7
-      max_tokens: 1000
-      api_key: "${OPENAI_API_KEY}"
-    mcp_servers:
-      - "database_mcp"
-      - "ticket_system_mcp"
+      systemPrompt: "Ты - профессиональный агент поддержки клиентов"
+      llm:
+        foundationModels:
+          modelName: "gpt-4o"
+      env:
+        rawEnvs:
+          OPENAI_API_KEY: "${OPENAI_API_KEY}"
+      scaling:
+        minScale: 1
+        maxScale: 10
+    integrationOptions:
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_API_KEY"
+      logging:
+        isEnabledLogging: true
+    mcpServers:
+      - "database-mcp"
+      - "ticket-system-mcp"
 ```
 
 ## 🔄 CI/CD интеграция

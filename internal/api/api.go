@@ -11,6 +11,7 @@ type API struct {
 	Agents       *AgentService
 	AgentSystems *AgentSystemService
 	Users        *UserService
+	Registries   *RegistryService
 }
 
 // NewAPI создает новый экземпляр API с всеми сервисами
@@ -23,5 +24,6 @@ func NewAPI(baseURL, projectID string, authService auth.IAMAuthServiceInterface)
 		Agents:       NewAgentService(client),
 		AgentSystems: NewAgentSystemService(client),
 		Users:        NewUserService(client),
+		Registries:   NewRegistryService(client),
 	}
 }

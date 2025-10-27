@@ -3,8 +3,11 @@ package deployer
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/api"
+	"github.com/cloud-ru/evo-ai-agents-cli/internal/docker"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/parser"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/ui"
 	"github.com/cloud-ru/evo-ai-agents-cli/internal/validator"
@@ -40,7 +43,7 @@ func (d *AgentDeployer) ValidateAgents(configFile string) error {
 	}
 
 	// Валидируем по схеме
-	schemaPath := "schemas/agent.schema.json"
+	schemaPath := "schemas/schema.json"
 	if err := validator.ValidateConfig(processedConfig, schemaPath); err != nil {
 		return fmt.Errorf("configuration validation failed: %w", err)
 	}
@@ -49,7 +52,7 @@ func (d *AgentDeployer) ValidateAgents(configFile string) error {
 }
 
 // DeployAgents развертывает агентов на основе YAML конфигурации
-func (d *AgentDeployer) DeployAgents(ctx context.Context, configFile string, dryRun bool) ([]DeployResult, error) {
+func (d *AgentDeployer) DeployAgents(ctx context.Context, configFile string, dryRun bool, buildAndPushImages bool) ([]DeployResult, error) {
 	results := []DeployResult{}
 
 	// Обрабатываем includes
@@ -65,6 +68,23 @@ func (d *AgentDeployer) DeployAgents(ctx context.Context, configFile string, dry
 	}
 
 	fmt.Println(ui.FormatInfo(fmt.Sprintf("Found %d agents to deploy.", len(agentsConfig))))
+
+	// Создаем Docker клиент для сборки и загрузки образов
+	var dockerClient *docker.Client
+	if buildAndPushImages {
+		// Получаем URL registry из конфигурации или переменных окружения
+		registryURL := os.Getenv("ARTIFACT_REGISTRY_URL")
+		if registryURL == "" {
+			registryURL = "cr.cloud.ru"
+		}
+		dockerClient = docker.NewClient(registryURL)
+	}
+
+	// Определяем путь к директории проекта (где находится configFile)
+	projectDir, err := filepath.Abs(filepath.Dir(configFile))
+	if err != nil {
+		projectDir = "."
+	}
 
 	for i, agentConfigRaw := range agentsConfig {
 		agentConfigMap, ok := agentConfigRaw.(map[string]interface{})
@@ -101,12 +121,50 @@ func (d *AgentDeployer) DeployAgents(ctx context.Context, configFile string, dry
 
 		fmt.Println(ui.FormatInfo(fmt.Sprintf("[%d/%d] Deploying agent: %s", i+1, len(agentsConfig), name)))
 
+		// Собираем и загружаем Docker образ если требуется
+		var imageURI string
+		if buildAndPushImages && dockerClient != nil {
+			// Ищем Dockerfile в директории проекта
+			dockerfilePath, err := docker.FindDockerfile(projectDir)
+			if err != nil {
+				fmt.Println(ui.FormatWarning(fmt.Sprintf("Dockerfile not found for %s: %v", name, err)))
+			} else {
+				// Формируем имя образа
+				registryURL := os.Getenv("ARTIFACT_REGISTRY_URL")
+				if registryURL == "" {
+					registryURL = "cr.cloud.ru"
+				}
+				imageName := fmt.Sprintf("%s:latest", name)
+
+				// Собираем и загружаем образ
+				fmt.Println(ui.FormatInfo(fmt.Sprintf("Building and pushing Docker image for %s...", name)))
+				if err := dockerClient.BuildAndPush(ctx, dockerfilePath, projectDir, imageName, registryURL); err != nil {
+					return nil, fmt.Errorf("failed to build and push image for %s: %w", name, err)
+				}
+
+				imageURI = fmt.Sprintf("%s/%s", registryURL, imageName)
+				fmt.Println(ui.FormatSuccess(fmt.Sprintf("Image pushed: %s", imageURI)))
+			}
+		}
+
 		// Создаем запрос для создания агента
 		createReq := &api.AgentCreateRequest{
 			Name:           name,
 			Description:    description,
 			Options:        options,
 			InstanceTypeID: "58a24a3d-b126-47a5-a39c-30a8aeaa4721", // Используем ID из существующего MCP сервера
+		}
+
+		// Если образ собран, добавляем его в запрос
+		if imageURI != "" {
+			if createReq.Options == nil {
+				createReq.Options = make(map[string]interface{})
+			}
+			if createReq.Options["imageSource"] == nil {
+				createReq.Options["imageSource"] = make(map[string]interface{})
+			}
+			imageSource := createReq.Options["imageSource"].(map[string]interface{})
+			imageSource["arImageUri"] = imageURI
 		}
 
 		// Добавляем LLM опции в Options если они есть

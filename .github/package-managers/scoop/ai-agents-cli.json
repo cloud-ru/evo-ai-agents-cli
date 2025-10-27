@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "description": "Command-line tool for managing AI agents and MCP servers",
+  "homepage": "https://github.com/cloud-ru/evo-ai-agents-cli",
+  "license": "MIT",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v1.0.0/ai-agents-cli-windows-amd64.zip",
+      "hash": "PLACEHOLDER_SHA256",
+      "bin": "ai-agents-cli.exe"
+    }
+  },
+  "checkver": {
+    "github": "cloud-ru/evo-ai-agents-cli",
+    "regex": "releases/tag/v([\\d.]+)"
+  },
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/cloud-ru/evo-ai-agents-cli/releases/download/v$version/ai-agents-cli-windows-amd64.zip"
+      }
+    }
+  },
+  "notes": [
+    "AI Agents CLI has been installed!",
+    "",
+    "To get started:",
+    "  1. Set your IAM credentials:",
+    "     $env:IAM_KEY_ID=\"your-iam-key-id\"",
+    "     $env:IAM_SECRET=\"your-iam-secret\"",
+    "  2. Set your project ID:",
+    "     $env:PROJECT_ID=\"your-project-id\"",
+    "  3. Run: ai-agents-cli --help",
+    "",
+    "For more information, visit: https://github.com/cloud-ru/evo-ai-agents-cli"
+  ]
+}
+

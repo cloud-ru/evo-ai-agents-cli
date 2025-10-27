@@ -16,6 +16,7 @@ var (
 	agentDeployFile   string
 	agentDryRun       bool
 	agentValidateOnly bool
+	agentBuildAndPush bool
 )
 
 // deployCmd represents the deploy command
@@ -67,9 +68,9 @@ var deployCmd = &cobra.Command{
 		// Получаем API клиент из DI контейнера
 		container := di.GetContainer()
 		apiClient, err := container.GetAPI()
-	if err != nil {
-		log.Fatal("Failed to get API client", "error", err)
-	}
+		if err != nil {
+			log.Fatal("Failed to get API client", "error", err)
+		}
 
 		// Создаем деплойер
 		agentDeployer := deployer.NewAgentDeployer(apiClient)
@@ -90,7 +91,7 @@ var deployCmd = &cobra.Command{
 
 		// Развертывание
 		fmt.Println(ui.FormatInfo("Starting deployment..."))
-		results, err := agentDeployer.DeployAgents(ctx, configFile, agentDryRun)
+		results, err := agentDeployer.DeployAgents(ctx, configFile, agentDryRun, agentBuildAndPush)
 		if err != nil {
 			log.Error("Deployment failed", "error", err)
 			fmt.Println(ui.CheckAndDisplayError(err))
@@ -108,4 +109,5 @@ func init() {
 	deployCmd.Flags().StringVarP(&agentDeployFile, "file", "f", "", "Путь к файлу конфигурации")
 	deployCmd.Flags().BoolVarP(&agentDryRun, "dry-run", "d", false, "Режим предварительного просмотра без создания ресурсов")
 	deployCmd.Flags().BoolVar(&agentValidateOnly, "validate-only", false, "Только валидация конфигурации без развертывания")
+	deployCmd.Flags().BoolVarP(&agentBuildAndPush, "build-image", "b", false, "Автоматическая сборка и загрузка Docker образов в Artifact Registry")
 }

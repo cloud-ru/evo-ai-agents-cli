@@ -40,7 +40,7 @@ func (d *SystemDeployer) ValidateSystems(configFile string) error {
 	}
 
 	// Валидируем по схеме
-	schemaPath := "schemas/systems.schema.json"
+	schemaPath := "schemas/schema.json"
 	if err := validator.ValidateConfig(processedConfig, schemaPath); err != nil {
 		return fmt.Errorf("configuration validation failed: %w", err)
 	}

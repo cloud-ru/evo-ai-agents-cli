@@ -138,9 +138,9 @@ var validateCmd = &cobra.Command{
 
 func loadSchemas(validator *validator.ConfigValidator) error {
 	schemas := map[string]string{
-		"mcp-servers":   "schemas/mcp.schema.json",
-		"agents":        "schemas/agent.schema.json",
-		"agent-systems": "schemas/systems.schema.json",
+		"mcp-servers":   "schemas/schema.json",
+		"agents":        "schemas/schema.json",
+		"agent-systems": "schemas/schema.json",
 	}
 
 	for name, path := range schemas {

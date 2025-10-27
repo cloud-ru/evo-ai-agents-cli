@@ -70,7 +70,7 @@ func init() {
 	RootCMD.SetHelpFunc(func(cmd *cobra.Command, args []string) {
 		showBeautifulHelp()
 	})
-	
+
 	// Also set help template to override default
 	RootCMD.SetHelpTemplate(`{{.UsageString}}`)
 
@@ -115,7 +115,7 @@ func showBeautifulHelp() {
 
 	// Commands section
 	commandsTitle := subtitleStyle.Render("📋 Доступные команды:")
-	
+
 	commands := []struct {
 		name        string
 		description string
@@ -132,8 +132,8 @@ func showBeautifulHelp() {
 
 	var commandsText string
 	for _, cmd := range commands {
-		commandsText += commandStyle.Render("  " + cmd.name) + "\n" +
-			descStyle.Render("    " + cmd.description) + "\n"
+		commandsText += commandStyle.Render("  "+cmd.name) + "\n" +
+			descStyle.Render("    "+cmd.description) + "\n"
 	}
 
 	// Flags section

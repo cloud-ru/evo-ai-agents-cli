@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cloud-ru/evo-ai-agents-cli/main/schemas/schema.json
+
+agents:
+  - name: "{{.ProjectName}}"
+    description: "AI агент на базе LangGraph с графом состояний"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    imageSource:
+      arImageUri: "cr.cloud.ru/prod/agents/{{.ProjectName}}:latest"
+    options:
+      systemPrompt: "You are a LangGraph-based AI agent with stateful workflow"
+      llm:
+        foundationModels:
+          modelName: "gpt-4o"
+      env:
+        rawEnvs:
+          OPENAI_API_KEY: "${OPENAI_API_KEY}"
+          LANGGRAPH_ENV: "production"
+          STATE_MANAGER: "redis"
+      scaling:
+        minScale: 1
+        maxScale: 8
+        isKeepAlive: true
+        keepAliveDuration:
+          hours: 1
+    integrationOptions:
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_BEARER"
+      logging:
+        isEnabledLogging: true
+      autoUpdateOptions:
+        isEnabled: true
+

@@ -1,0 +1,132 @@
+# GoReleaser configuration for AI Agents CLI
+# Automated releases with Homebrew, Scoop, and winget support
+
+project_name: ai-agents-cli
+before:
+  hooks:
+    - go mod download
+    - go mod tidy
+builds:
+  - id: ai-agents-cli
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    binary: ai-agents-cli
+    main: ./main.go
+    ldflags:
+      - -X main.Version={{.Version}}
+      - -X main.BuildTime={{.Date}}
+      - -X main.GitCommit={{.FullCommit}}
+    ignore:
+      - goos: windows
+        goarch: arm64
+archives:
+  - id: default
+    name_template: "ai-agents-cli-{{ .Os }}-{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+      - goos: linux
+        format: tar.gz
+      - goos: darwin
+        format: tar.gz
+    files:
+      - README.md
+      - LICENSE
+      - env.example
+checksum:
+  algorithm: sha256
+  name_template: "ai-agents-cli-{{ .Os }}-{{ .Arch }}.{{ .Format }}.sha256"
+snapshot:
+  name_template: "{{ .Tag }}-SNAPSHOT"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "merge"
+      - "Merge"
+      - "^build:"
+brews:
+  - repository:
+      owner: cloud-ru
+      name: homebrew-tap
+    folder: Formula
+    homepage: "https://github.com/cloud-ru/evo-ai-agents-cli"
+    description: "Command-line tool for managing AI agents and MCP servers"
+    license: MIT
+    test: |
+      system "#{bin}/ai-agents-cli --version"
+    caveats: |
+      AI Agents CLI has been installed!
+      
+      To get started:
+        1. Set your IAM credentials: export IAM_KEY_ID="your-iam-key-id" IAM_SECRET="your-iam-secret"
+        2. Set your project ID: export PROJECT_ID="your-project-id"
+        3. Run: ai-agents-cli --help
+      
+      For more information, visit: https://github.com/cloud-ru/evo-ai-agents-cli
+scoops:
+  - repository:
+      owner: cloud-ru
+      name: scoop-bucket
+    folder: bucket
+    homepage: "https://github.com/cloud-ru/evo-ai-agents-cli"
+    description: "Command-line tool for managing AI agents and MCP servers"
+    license: MIT
+    persist:
+      - config
+nfpms:
+  - id: linux-amd64
+    package_name: ai-agents-cli
+    file_name_template: "ai-agents-cli_linux_amd64"
+    homepage: "https://github.com/cloud-ru/evo-ai-agents-cli"
+    description: "Command-line tool for managing AI agents and MCP servers"
+    license: MIT
+    formats:
+      - deb
+      - rpm
+release:
+  mode: replace
+  github:
+    owner: cloud-ru
+    name: evo-ai-agents-cli
+  header: |
+    ## Release {{ .Tag }}
+    
+    AI Agents CLI {{ .Version }} is now available!
+    
+    ### Installation
+    
+    **Homebrew (macOS/Linux):**
+    ```bash
+    brew install cloud-ru/evo-ai-agents-cli/ai-agents-cli
+    ```
+    
+    **Scoop (Windows):**
+    ```powershell
+    scoop bucket add cloud-ru https://github.com/cloud-ru/scoop-bucket
+    scoop install ai-agents-cli
+    ```
+    
+    **Winget (Windows):**
+    ```powershell
+    winget install CloudRu.AIAgentsCLI
+    ```
+    
+    ### Changes
+    
+  footer: |
+    See the [full changelog](https://github.com/cloud-ru/evo-ai-agents-cli/compare/{{ .PreviousTag }}...{{ .Tag }}).
+    
+    ---
+    
+    Don't forget to [star the repo](https://github.com/cloud-ru/evo-ai-agents-cli) if you find this tool useful!
+

@@ -1,42 +1,114 @@
 # yaml-language-server: $schema=../schemas/schema.json
+# =============================================================================
+# Пример конфигурации систем AI агентов с оркестрацией
+# =============================================================================
+# Этот файл демонстрирует создание систем с несколькими агентами:
+# - Оркестрация взаимодействия между агентами
+# - Индивидуальные настройки масштабирования для каждого агента
+# - Опции системы (наблюдаемость, хранилище контекста)
+# - Интеграция и логирование на уровне системы
+# =============================================================================
 
 agent-systems:
+  # ----------------------------------------------------------------------------
+  # Пример 1: Система поддержки клиентов с расширенной оркестрацией
+  # ----------------------------------------------------------------------------
   - name: "customer-support-system"
-    description: "Система поддержки клиентов с несколькими агентами"
-    options:
-      orchestration: "sequential"
-      timeout: 300
-      retry_attempts: 3
-      fallback_enabled: true
+    description: "Система поддержки клиентов с оркестрацией нескольких специализированных агентов"
+    
+    # ID типа вычислительной конфигурации (UUID)
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    
+    # Список агентов в системе (минимум 1, максимум 10)
     agents:
-      - "customer-support"
-      - "escalation-agent"
-      - "knowledge-base-agent"
+      # Первичный агент поддержки с высоким масштабированием
+      - name: "customer-support-primary"
+        scaling:
+          minScale: 2       # Всегда минимум 2 реплики
+          maxScale: 20     # До 20 реплик при пиковой нагрузке
+          isScaleUpAllSystem: true   # Масштабировать всю систему при нагрузке
+          isKeepAlive: true
+          keepAliveDuration:
+            hours: 2
+            minutes: 0      # Поддерживать активным 2 часа
       
+      # Агент эскалации сложных вопросов
+      - name: "escalation-agent"
+        scaling:
+          minScale: 1       # Минимум 1 реплика
+          maxScale: 5       # До 5 реплик при необходимости
+          isKeepAlive: false  # Может быть приостановлен
+      
+      # Агент для работы с базой знаний
+      - name: "knowledge-base-agent"
+        scaling:
+          minScale: 1
+          maxScale: 10
+          isKeepAlive: true
+    
+    # Опции оркестратора (координация работы агентов)
+    orchestratorOptions:
+      # Системный промпт для оркестратора
+      systemPrompt: "Оркестрируй взаимодействие между агентами поддержки"
+      
+      # Настройки LLM для оркестратора
+      llm:
+        foundationModels:
+          modelName: "gpt-4o"  # Мощная модель для координации
+      
+      # Переменные окружения для оркестратора
+      env:
+        rawEnvs:
+          ORCHESTRATION_MODE: "parallel"  # Параллельная обработка запросов
+          MAX_RETRIES: "3"                 # Максимум 3 попытки
+      
+      # Масштабирование оркестратора
+      scaling:
+        minScale: 1    # Всегда минимум 1 оркестратор
+        maxScale: 3    # До 3 оркестраторов при высокой нагрузке
+    
+    # Опции на уровне системы
+    options:
+      # Наблюдаемость (мониторинг состояния системы)
+      observability:
+        isEnabled: true
+      
+      # Хранилище контекста (сохранение истории взаимодействий)
+      contextStorage:
+        isEnabled: true
+    
+    # Опции интеграции на уровне системы
+    integrationOptions:
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_BEARER"
+      logging:
+        isEnabledLogging: true
+        logGroupId: "345e6789-e89b-12d3-a456-426614174003"
+      autoUpdateOptions:
+        isEnabled: true  # Автоматическое обновление системы
+
+  # ----------------------------------------------------------------------------
+  # Пример 2: Система анализа данных с ML инференсом
+  # ----------------------------------------------------------------------------
   - name: "data-analysis-system"
-    description: "Система анализа данных с параллельной обработкой"
-    options:
-      orchestration: "parallel"
-      max_concurrent_agents: 5
-      timeout: 600
-      result_aggregation: "merge"
+    description: "Система анализа данных с параллельной обработкой и агрегацией результатов"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    
+    # Пипелайн агентов для анализа данных
     agents:
-      - "data-analyst"
-      - "report-generator"
-      - "visualization-agent"
-      
-  - name: "code-review-system"
-    description: "Система автоматического ревью кода"
-    options:
-      orchestration: "pipeline"
-      stages:
-        - "security_check"
-        - "performance_analysis"
-        - "style_check"
-        - "documentation_review"
-      timeout: 1800
-    agents:
-      - "security-reviewer"
-      - "performance-analyzer"
-      - "style-checker"
-      - "documentation-agent"
+      - name: "data-collector"    # Сбор данных
+      - name: "data-analyst"      # Анализ данных
+      - name: "report-generator"  # Генерация отчетов
+    
+    # Оркестратор с ML инференсом
+    orchestratorOptions:
+      systemPrompt: "Координируй сбор, анализ и генерацию отчетов"
+      llm:
+        # Используем кастомную ML модель
+        mlInference:
+          modelRunId: "c3d4e5f6-a7b8-9012-cd34-ef56ab789012"
+    
+    integrationOptions:
+      logging:
+        isEnabledLogging: true

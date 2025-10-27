@@ -1,25 +1,147 @@
 # yaml-language-server: $schema=../schemas/schema.json
+# =============================================================================
+# Пример конфигурации MCP (Model Context Protocol) серверов
+# =============================================================================
+# Этот файл демонстрирует различные способы настройки MCP серверов:
+# - Базовые параметры (имя, описание, типы инстансов)
+# - Источники образов (архив реестра, ID сервера, маркетплейс)
+# - Выставленные порты
+# - Переменные окружения (сырые и из секретов)
+# - Масштабирование
+# - Опции интеграции (аутентификация, логирование, автообновление)
+# =============================================================================
 
 mcp-servers:
+  # ----------------------------------------------------------------------------
+  # Пример 1: Простой MCP сервер из локального образа
+  # ----------------------------------------------------------------------------
   - name: "my-simple-mcp"
-    description: "Простой MCP сервер для демонстрации"
+    description: "Простой MCP сервер для демонстрации возможностей"
+    
+    # ID типа вычислительной конфигурации (UUID)
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    
+    # Образ из архивного реестра
+    imageSource:
+      arImageUri: "cr.cloud.ru/prod/mcp/simple-mcp:latest"
+    
+    # TCP порты, которые будут выставлены наружу (максимум 10)
+    exposedPorts:
+      - 8080
+    
+    # Конфигурационные опции (можно добавлять любые кастомные опции)
     options:
-      host: "localhost"
-      port: 8080
       timeout: 30
       retries: 3
+      debug: true
+    
+    # Переменные окружения
+    environmentOptions:
+      # Сырые переменные окружения (максимум 20 пар)
+      rawEnvs:
+        LOG_LEVEL: "INFO"
+        API_KEY: "${API_KEY}"
+    
+    # Настройки масштабирования
+    scaling:
+      minScale: 1
+      maxScale: 5
+      isKeepAlive: true  # Поддерживать сервер активным
+    
+    # Опции интеграции
+    integrationOptions:
+      # Настройки аутентификации
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_BEARER"
       
+      # Настройки логирования
+      logging:
+        isEnabledLogging: true
+        logGroupId: "123e4567-e89b-12d3-a456-426614174001"  # UUID группы логов
+
+  # ----------------------------------------------------------------------------
+  # Пример 2: MCP сервер из маркетплейса для работы с БД
+  # ----------------------------------------------------------------------------
   - name: "database-mcp"
-    description: "MCP сервер для работы с базой данных"
+    description: "MCP сервер для работы с PostgreSQL базой данных"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    
+    # Используем сервер из маркетплейса
+    imageSource:
+      marketplaceMcpServerId: "d1e2f3a4-b5c6-7890-1234-ab56cd789012"
+    
+    # Несколько портов для PostgreSQL (стандартный и резервный)
+    exposedPorts:
+      - 5432  # Стандартный порт PostgreSQL
+    
     options:
-      connection_string: "postgresql://user:pass@localhost/db"
-      max_connections: 10
+      connection_pool_size: 20
       query_timeout: 60
-      
+      enable_ssl: true
+    
+    environmentOptions:
+      # Используем секрет из хранилища для пароля БД
+      secretEnvs:
+        db_password:
+          id: "987fcdeb-51a2-43a7-8d3e-123456789abc"  # UUID секрета
+          version: 1  # Версия секрета
+    
+    scaling:
+      minScale: 2       # Минимум 2 реплики для отказоустойчивости
+      maxScale: 10
+      isScaleUpAllSystem: false  # Не масштабировать всю систему
+      isKeepAlive: true
+      keepAliveDuration:
+        hours: 2
+        minutes: 0
+    
+    integrationOptions:
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_BASIC"
+      logging:
+        isEnabledLogging: true
+
+  # ----------------------------------------------------------------------------
+  # Пример 3: MCP сервер с кешированием и автообновлением
+  # ----------------------------------------------------------------------------
   - name: "api-mcp"
-    description: "MCP сервер для интеграции с внешними API"
+    description: "MCP сервер для интеграции с внешними API сервисами"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    
+    imageSource:
+      marketplaceMcpServerId: "b2c3d4e5-f6a7-8901-bc23-de45ef678901"
+    
+    exposedPorts:
+      - 9090  # API порт
+    
     options:
       base_url: "https://api.example.com"
-      api_key: "${API_KEY}"
-      rate_limit: 100
-      timeout: 30
+      rate_limit: 100       # Лимит запросов в минуту
+      timeout: 30           # Таймаут запросов в секундах
+      enable_caching: true  # Включить кеширование
+    
+    environmentOptions:
+      rawEnvs:
+        API_TIMEOUT: "30"
+        CACHE_TTL: "300"  # Время жизни кеша в секундах
+      
+      secretEnvs:
+        api_token:
+          id: "234e5678-e89b-12d3-a456-426614174002"
+          version: 3
+    
+    scaling:
+      minScale: 1
+      maxScale: 8
+    
+    integrationOptions:
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_API_KEY"
+      logging:
+        isEnabledLogging: true
+      # Включить автообновление
+      autoUpdateOptions:
+        isEnabled: true

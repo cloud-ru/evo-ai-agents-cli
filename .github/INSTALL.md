@@ -15,6 +15,22 @@ winget upgrade CloudRu.AIAgentsCLI
 winget uninstall CloudRu.AIAgentsCLI
 ```
 
+### Windows (Scoop)
+
+```powershell
+# Добавление bucket
+scoop bucket add cloud-ru https://github.com/cloud-ru/scoop-bucket
+
+# Установка
+scoop install ai-agents-cli
+
+# Обновление
+scoop update ai-agents-cli
+
+# Удаление
+scoop uninstall ai-agents-cli
+```
+
 ### macOS/Linux (Homebrew)
 
 ```bash
@@ -137,6 +153,9 @@ ENTRYPOINT ["./ai-agents-cli"]
 ```bash
 # Windows (winget)
 winget upgrade CloudRu.AIAgentsCLI
+
+# Windows (Scoop)
+scoop update ai-agents-cli
 
 # macOS/Linux (Homebrew)
 brew upgrade ai-agents-cli

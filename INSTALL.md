@@ -2,6 +2,23 @@
 
 ## Быстрая установка
 
+### Windows (winget)
+```bash
+winget install CloudRu.AIAgentsCLI
+```
+
+### Windows (Scoop)
+```powershell
+scoop bucket add cloud-ru https://github.com/cloud-ru/scoop-bucket
+scoop install ai-agents-cli
+```
+
+### macOS/Linux (Homebrew)
+```bash
+brew tap cloud-ru/evo-ai-agents-cli
+brew install ai-agents-cli
+```
+
 ### 1. Автоматическая установка (рекомендуется)
 ```bash
 # Собрать, установить и настроить CLI

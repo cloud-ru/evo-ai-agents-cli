@@ -1,51 +1,142 @@
 # yaml-language-server: $schema=../schemas/schema.json
+# =============================================================================
+# Пример конфигурации AI агентов для развертывания
+# =============================================================================
+# Этот файл демонстрирует различные способы настройки агентов:
+# - Базовые параметры (имя, описание, типы инстансов)
+# - Источники образов (архив реестра, ID агента, маркетплейс)
+# - Настройки LLM (базовые модели, ML инференс)
+# - Переменные окружения (сырые и из секретов)
+# - Масштабирование
+# - Опции интеграции (аутентификация, логирование, автообновление)
+# - Подключение MCP серверов
+# =============================================================================
 
 agents:
+  # ----------------------------------------------------------------------------
+  # Пример 1: Агент поддержки клиентов с полной конфигурацией
+  # ----------------------------------------------------------------------------
   - name: "customer-support-agent"
-    description: "AI агент для поддержки клиентов"
+    description: "AI агент для поддержки клиентов с интеграцией CRM"
+    
+    # ID типа вычислительной конфигурации (UUID)
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    
+    # Источник образа контейнера из архивного реестра
+    imageSource:
+      arImageUri: "cr.cloud.ru/prod/agents/customer-support:latest"
+    
+    # Конфигурационные опции агента
     options:
-      personality: "helpful and professional"
-      response_style: "conversational"
-      max_conversation_turns: 10
-    llm_options:
-      provider: "openai"
-      model: "gpt-4"
-      temperature: 0.7
-      max_tokens: 1000
-      api_key: "${OPENAI_API_KEY}"
-    mcp_servers:
+      # Системный промпт для определения поведения агента
+      systemPrompt: "Ты - профессиональный агент поддержки клиентов"
+      
+      # Настройки LLM (Large Language Model)
+      llm:
+        foundationModels:
+          # Используем GPT-4o в качестве базовой модели
+          modelName: "gpt-4o"
+      
+      # Переменные окружения
+      env:
+        # Сырые переменные окружения (максимум 20 пар)
+        rawEnvs:
+          OPENAI_API_KEY: "${OPENAI_API_KEY}"
+          CRM_API_URL: "https://crm.example.com/api"
+      
+      # Настройки масштабирования
+      scaling:
+        minScale: 1        # Минимальное количество реплик
+        maxScale: 10       # Максимальное количество реплик
+        isScaleUpAllSystem: true   # Масштабировать всю систему
+        isKeepAlive: true          # Поддерживать агента активным
+        keepAliveDuration:
+          hours: 1
+          minutes: 30
+    
+    # Опции интеграции
+    integrationOptions:
+      # Настройки аутентификации
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_API_KEY"  # Тип аутентификации
+      
+      # Настройки логирования
+      logging:
+        isEnabledLogging: true
+        logGroupId: "123e4567-e89b-12d3-a456-426614174000"  # UUID группы логов
+      
+      # Настройки автообновления
+      autoUpdateOptions:
+        isEnabled: true
+    
+    # Список MCP серверов для подключения (максимум 10)
+    mcpServers:
       - "database-mcp"
       - "ticket-system-mcp"
-      
+
+  # ----------------------------------------------------------------------------
+  # Пример 2: Агент-аналитик с использованием секретов и кастомной модели
+  # ----------------------------------------------------------------------------
   - name: "data-analyst-agent"
     description: "Агент для анализа данных и создания отчетов"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    
+    # Используем образ с конкретной версией
+    imageSource:
+      arImageUri: "cr.cloud.ru/prod/agents/data-analyst:v2.1"
+    
     options:
-      analysis_depth: "detailed"
-      visualization_preference: "charts"
-      report_format: "pdf"
-    llm_options:
-      provider: "anthropic"
-      model: "claude-3-sonnet"
-      temperature: 0.3
-      max_tokens: 2000
-      api_key: "${ANTHROPIC_API_KEY}"
-    mcp_servers:
+      systemPrompt: "Ты - аналитик данных, специализируешься на обработке больших объемов информации"
+      
+      llm:
+        # Используем Claude 3.5 Sonnet
+        foundationModels:
+          modelName: "claude-3-5-sonnet"
+      
+      env:
+        rawEnvs:
+          ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+          DATA_SOURCE_URL: "https://data.example.com"
+        
+        # Используем секреты из хранилища
+        secretEnvs:
+          db_credentials:
+            id: "987fcdeb-51a2-43a7-8d3e-123456789abc"  # UUID секрета
+            version: 2  # Версия секрета
+      
+      scaling:
+        minScale: 2   # Минимум 2 реплики для отказоустойчивости
+        maxScale: 15
+        isKeepAlive: true
+    
+    integrationOptions:
+      logging:
+        isEnabledLogging: true
+    
+    mcpServers:
       - "database-mcp"
       - "api-mcp"
-      - "visualization-mcp"
-      
+
+  # ----------------------------------------------------------------------------
+  # Пример 3: Агент из маркетплейса с использованием ML инференса
+  # ----------------------------------------------------------------------------
   - name: "code-review-agent"
-    description: "Агент для автоматического ревью кода"
+    description: "Агент для автоматического ревью кода с проверкой безопасности"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    
+    # Используем агента из маркетплейса
+    imageSource:
+      marketplaceAgentId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    
     options:
-      review_scope: "security,performance,style"
-      severity_threshold: "medium"
-      auto_approve: false
-    llm_options:
-      provider: "openai"
-      model: "gpt-4"
-      temperature: 0.2
-      max_tokens: 1500
-      api_key: "${OPENAI_API_KEY}"
-    mcp_servers:
+      systemPrompt: "Проверяй код на безопасность, производительность и соответствие стандартам"
+      
+      llm:
+        # Используем кастомный запуск модели (ML инференс)
+        mlInference:
+          modelRunId: "f1e2d3c4-b5a6-7980-ef12-ab34cd567890"
+    
+    mcpServers:
       - "git-mcp"
       - "security-scanner-mcp"

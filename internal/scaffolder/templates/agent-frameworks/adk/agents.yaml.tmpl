@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cloud-ru/evo-ai-agents-cli/main/schemas/schema.json
+
+agents:
+  - name: "{{.ProjectName}}"
+    description: "AI агент на базе ADK (Agent Development Kit)"
+    instanceTypeId: "58a24a3d-b126-47a5-a39c-30a8aeaa4721"
+    imageSource:
+      arImageUri: "cr.cloud.ru/prod/agents/{{.ProjectName}}:latest"
+    options:
+      systemPrompt: "You are a helpful AI agent built with ADK"
+      llm:
+        foundationModels:
+          modelName: "gpt-4o"
+      env:
+        rawEnvs:
+          OPENAI_API_KEY: "${OPENAI_API_KEY}"
+          ADK_ENV: "production"
+      scaling:
+        minScale: 1
+        maxScale: 5
+        isKeepAlive: true
+    integrationOptions:
+      authOptions:
+        isEnabled: true
+        type: "AUTHENTICATION_TYPE_API_KEY"
+      logging:
+        isEnabledLogging: true
+      autoUpdateOptions:
+        isEnabled: true
+
